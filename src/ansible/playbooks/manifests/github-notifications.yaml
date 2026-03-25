@@ -5,7 +5,7 @@ metadata:
   namespace: flux-system
 spec:
   type: github
-  address: https://github.com/lz/infra-k8s-apps
+  address: https://github.com/glitchedmob/infra-k8s-apps
   secretRef:
     name: github-status-token
 ---

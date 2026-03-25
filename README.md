@@ -27,7 +27,7 @@ make tf-plan
 - `src/tf/k3s.tf` contains all Terraform resources for the workload K3s cluster, including VM definitions, SSH key material, and Terraform Ansible inventory resources.
 - `src/ansible/inventory.yml` uses the Terraform inventory plugin (`cloud.terraform.terraform_provider`).
 - `src/ansible/group_vars/all.yml` resolves `ssm_private_key_path` from AWS SSM at runtime.
-- `src/ansible/playbooks/apply.yml` bootstraps Flux and GitHub notifications for `lz/infra-k8s-apps`.
+- `src/ansible/playbooks/apply.yml` bootstraps Flux and GitHub notifications for `glitchedmob/infra-k8s-apps`.
 - VM provisioning uses the shared `infra-shared` `proxmox-vm` module with `os_id = "debian13"` in `src/tf/k3s.tf`.
 
 ## Required Terraform Variables
@@ -52,5 +52,5 @@ make tf-plan
 ## Flux Bootstrap Notes
 
 - Run `bootstrap.yml` first to install K3s, then run `apply.yml` to bootstrap Flux.
-- After Terraform apply, add `flux_git_public_key` output to `lz/infra-k8s-apps` as a read-only deploy key.
+- After Terraform apply, add `flux_git_public_key` output to `glitchedmob/infra-k8s-apps` as a read-only deploy key.
 - Update SSM parameter at `flux_github_status_token_ssm_path` with a valid GitHub token so Flux notifications can post status updates.
