@@ -3,3 +3,5 @@ export AWS_DEFAULT_PROFILE="your-aws-profile-name"
 # Proxmox provider auth
 export TF_VAR_proxmox_endpoint="https://x86-node-01:8006/"
 export TF_VAR_proxmox_api_token="lz-gha@pve!gha=your-token-secret"
+export TF_VAR_b2_application_key_id="keyid"
+export TF_VAR_b2_application_key="key"
