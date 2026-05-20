@@ -38,6 +38,7 @@
         argocd_oauth_secret_manifest: "{{ lookup('template', playbook_dir ~ '/manifests/argocd-oauth-secret.yaml.j2') }}"
         argocd_ssh_known_hosts_manifest: "{{ lookup('template', playbook_dir ~ '/manifests/argocd-ssh-known-hosts-cm.yaml.j2') }}"
         argocd_cm_manifest: "{{ lookup('template', playbook_dir ~ '/manifests/argocd-cm.yaml.j2') }}"
+        argocd_cmd_params_cm_manifest: "{{ lookup('file', playbook_dir ~ '/manifests/argocd-cmd-params-cm.yaml') }}"
         argocd_rbac_cm_manifest: "{{ lookup('file', playbook_dir ~ '/manifests/argocd-rbac-cm.yaml') }}"
         argocd_root_app_manifest: "{{ lookup('file', playbook_dir ~ '/manifests/argocd-root-app.yaml') }}"
       run_once: true
@@ -73,6 +74,8 @@
       loop:
         - name: argocd config
           manifest: "{{ argocd_cm_manifest }}"
+        - name: argocd cmd params config
+          manifest: "{{ argocd_cmd_params_cm_manifest }}"
         - name: argocd rbac config
           manifest: "{{ argocd_rbac_cm_manifest }}"
         - name: argocd repo secret
