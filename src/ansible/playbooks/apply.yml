@@ -1,13 +1,14 @@
 ---
-- name: Bootstrap Flux and baseline manifests
+- name: Bootstrap Argo CD and baseline manifests
   hosts: k3s_servers
   become: true
   gather_facts: true
   tasks:
-    - name: Fetch Flux SSM values
+    - name: Fetch Argo CD SSM values
       ansible.builtin.set_fact:
-        flux_git_private_key: "{{ lookup('amazon.aws.aws_ssm', ssm_flux_git_private_key_path) if ssm_flux_git_private_key_path is defined else omit }}"
-        flux_github_status_token: "{{ lookup('amazon.aws.aws_ssm', ssm_github_status_token_path) if ssm_github_status_token_path is defined else omit }}"
+        git_deploy_private_key: "{{ lookup('amazon.aws.aws_ssm', ssm_git_deploy_private_key_path) if ssm_git_deploy_private_key_path is defined else omit }}"
+        argocd_github_oauth_client_id: "{{ lookup('amazon.aws.aws_ssm', ssm_argocd_github_oauth_client_id_path) if ssm_argocd_github_oauth_client_id_path is defined else omit }}"
+        argocd_github_oauth_client_secret: "{{ lookup('amazon.aws.aws_ssm', ssm_argocd_github_oauth_client_secret_path) if ssm_argocd_github_oauth_client_secret_path is defined else omit }}"
       run_once: true
 
     - name: Fetch GitHub SSH known_hosts
@@ -19,18 +20,20 @@
       become: false
       run_once: true
 
-    - name: Render Flux install manifest in memory
+    - name: Render Argo CD install manifest in memory
       ansible.builtin.set_fact:
-        flux_install_manifest: "{{ lookup('url', 'https://github.com/fluxcd/flux2/releases/download/v2.8.1/install.yaml', split_lines=False) }}"
+        argocd_install_manifest: "{{ lookup('url', 'https://raw.githubusercontent.com/argoproj/argo-cd/v3.3.10/manifests/install.yaml', split_lines=False) }}"
       run_once: true
 
     - name: Render manifest files in memory
       ansible.builtin.set_fact:
         namespaces_manifest: "{{ lookup('file', playbook_dir ~ '/manifests/namespaces.yaml') }}"
-        flux_sync_manifests: "{{ lookup('file', playbook_dir ~ '/manifests/flux-sync.yaml') }}"
-        flux_git_auth_manifest: "{{ lookup('template', playbook_dir ~ '/manifests/flux-git-auth-secret.yaml.j2') }}"
-        github_status_token_manifest: "{{ lookup('template', playbook_dir ~ '/manifests/github-status-token-secret.yaml.j2') }}"
-        github_notifications_manifest: "{{ lookup('file', playbook_dir ~ '/manifests/github-notifications.yaml') }}"
+        argocd_repo_secret_manifest: "{{ lookup('template', playbook_dir ~ '/manifests/argocd-repo-secret.yaml.j2') }}"
+        argocd_oauth_secret_manifest: "{{ lookup('template', playbook_dir ~ '/manifests/argocd-oauth-secret.yaml.j2') }}"
+        argocd_ssh_known_hosts_manifest: "{{ lookup('template', playbook_dir ~ '/manifests/argocd-ssh-known-hosts-cm.yaml.j2') }}"
+        argocd_cm_manifest: "{{ lookup('template', playbook_dir ~ '/manifests/argocd-cm.yaml.j2') }}"
+        argocd_rbac_cm_manifest: "{{ lookup('file', playbook_dir ~ '/manifests/argocd-rbac-cm.yaml') }}"
+        argocd_root_app_manifest: "{{ lookup('file', playbook_dir ~ '/manifests/argocd-root-app.yaml') }}"
       run_once: true
 
     - name: Apply Kubernetes manifests
@@ -44,16 +47,20 @@
       loop:
         - name: namespaces
           manifest: "{{ namespaces_manifest }}"
-        - name: flux install
-          manifest: "{{ flux_install_manifest }}"
-        - name: flux git auth secret
-          manifest: "{{ flux_git_auth_manifest }}"
-        - name: github status token
-          manifest: "{{ github_status_token_manifest }}"
-        - name: github notifications
-          manifest: "{{ github_notifications_manifest }}"
-        - name: flux sync
-          manifest: "{{ flux_sync_manifests }}"
+        - name: argocd install
+          manifest: "{{ argocd_install_manifest }}"
+        - name: argocd config
+          manifest: "{{ argocd_cm_manifest }}"
+        - name: argocd rbac config
+          manifest: "{{ argocd_rbac_cm_manifest }}"
+        - name: argocd repo secret
+          manifest: "{{ argocd_repo_secret_manifest }}"
+        - name: argocd oauth secret
+          manifest: "{{ argocd_oauth_secret_manifest }}"
+        - name: argocd ssh known hosts
+          manifest: "{{ argocd_ssh_known_hosts_manifest }}"
+        - name: argocd root app
+          manifest: "{{ argocd_root_app_manifest }}"
       loop_control:
         label: "{{ item.name }}"
       run_once: true

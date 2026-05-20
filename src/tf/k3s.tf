@@ -52,16 +52,23 @@ module "k3s_vm" {
   enable_guest_agent = true
 }
 
-module "flux_deploy_key" {
+module "git_deploy_key" {
   source               = "git::https://github.com/glitchedmob/infra-shared.git//src/tf/modules/ssh-key?ref=main"
-  name                 = "flux-infra-vm-workloads"
+  name                 = "infra-vm-workloads"
   key_version          = 1
-  ssm_private_key_path = "${local.ssm_key_prefix}/flux-git-private-key"
-  ssm_public_key_path  = "${local.ssm_key_prefix}/flux-git-public-key"
+  ssm_private_key_path = "${local.ssm_key_prefix}/git-deploy-private-key"
+  ssm_public_key_path  = "${local.ssm_key_prefix}/git-deploy-public-key"
 }
 
-resource "aws_ssm_parameter" "github_status_token" {
-  name             = "${local.ssm_key_prefix}/flux-github-status-token"
+resource "aws_ssm_parameter" "argocd_github_oauth_client_id" {
+  name             = "${local.ssm_key_prefix}/argocd-github-oauth-client-id"
+  type             = "SecureString"
+  value_wo         = "CHANGEME"
+  value_wo_version = 1
+}
+
+resource "aws_ssm_parameter" "argocd_github_oauth_client_secret" {
+  name             = "${local.ssm_key_prefix}/argocd-github-oauth-client-secret"
   type             = "SecureString"
   value_wo         = "CHANGEME"
   value_wo_version = 1
@@ -94,7 +101,9 @@ resource "ansible_host" "workload" {
     ansible_user                  = local.vm_user
     node_name                     = each.value.node_name
     ssm_private_key_path          = module.ssh_key.ssm_path
-    ssm_flux_git_private_key_path = module.flux_deploy_key.ssm_path
+    ssm_git_deploy_private_key_path  = module.git_deploy_key.ssm_path
+    ssm_argocd_github_oauth_client_id_path     = aws_ssm_parameter.argocd_github_oauth_client_id.name
+    ssm_argocd_github_oauth_client_secret_path = aws_ssm_parameter.argocd_github_oauth_client_secret.name
     ssm_github_status_token_path  = aws_ssm_parameter.github_status_token.name
     proxmox_vm_role               = each.value.role
     ansible_ssh_use_ssh_agent     = "false"
