@@ -42,7 +42,27 @@
         argocd_root_app_manifest: "{{ lookup('file', playbook_dir ~ '/manifests/argocd-root-app.yaml') }}"
       run_once: true
 
-    - name: Apply Kubernetes manifests
+    - name: Apply namespace manifest
+      ansible.builtin.command: kubectl apply -f -
+      args:
+        stdin: "{{ namespaces_manifest }}"
+      environment:
+        KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+      register: kubectl_apply_result
+      changed_when: "'created' in (kubectl_apply_result.stdout | default('')) or 'configured' in (kubectl_apply_result.stdout | default(''))"
+      run_once: true
+
+    - name: Apply Argo CD install manifest (server-side)
+      ansible.builtin.command: kubectl apply --server-side --force-conflicts -f -
+      args:
+        stdin: "{{ argocd_install_manifest }}"
+      environment:
+        KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+      register: kubectl_apply_result
+      changed_when: "'created' in (kubectl_apply_result.stdout | default('')) or 'configured' in (kubectl_apply_result.stdout | default(''))"
+      run_once: true
+
+    - name: Apply Argo CD config and bootstrap manifests
       ansible.builtin.command: kubectl apply -f -
       args:
         stdin: "{{ item.manifest }}"
@@ -51,10 +71,6 @@
       register: kubectl_apply_result
       changed_when: "'created' in (kubectl_apply_result.stdout | default('')) or 'configured' in (kubectl_apply_result.stdout | default(''))"
       loop:
-        - name: namespaces
-          manifest: "{{ namespaces_manifest }}"
-        - name: argocd install
-          manifest: "{{ argocd_install_manifest }}"
         - name: argocd config
           manifest: "{{ argocd_cm_manifest }}"
         - name: argocd rbac config
