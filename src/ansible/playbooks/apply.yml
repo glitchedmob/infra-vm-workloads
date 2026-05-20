@@ -6,9 +6,15 @@
   tasks:
     - name: Fetch Argo CD SSM values
       ansible.builtin.set_fact:
-        git_deploy_private_key: "{{ lookup('amazon.aws.aws_ssm', ssm_git_deploy_private_key_path) if ssm_git_deploy_private_key_path is defined else omit }}"
-        argocd_github_oauth_client_id: "{{ lookup('amazon.aws.aws_ssm', ssm_argocd_github_oauth_client_id_path) if ssm_argocd_github_oauth_client_id_path is defined else omit }}"
-        argocd_github_oauth_client_secret: "{{ lookup('amazon.aws.aws_ssm', ssm_argocd_github_oauth_client_secret_path) if ssm_argocd_github_oauth_client_secret_path is defined else omit }}"
+        git_deploy_private_key: >-
+          {{ lookup('amazon.aws.aws_ssm', ssm_git_deploy_private_key_path)
+             if ssm_git_deploy_private_key_path is defined else omit }}
+        argocd_github_oauth_client_id: >-
+          {{ lookup('amazon.aws.aws_ssm', ssm_argocd_github_oauth_client_id_path)
+             if ssm_argocd_github_oauth_client_id_path is defined else omit }}
+        argocd_github_oauth_client_secret: >-
+          {{ lookup('amazon.aws.aws_ssm', ssm_argocd_github_oauth_client_secret_path)
+             if ssm_argocd_github_oauth_client_secret_path is defined else omit }}
       run_once: true
 
     - name: Fetch GitHub SSH known_hosts
