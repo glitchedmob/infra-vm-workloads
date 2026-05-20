@@ -9,4 +9,4 @@ metadata:
 data:
   policy.csv: |
     g, glitchedmob, role:admin
-  policy.default: ""
+  scopes: "[groups, login]"

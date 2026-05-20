@@ -18,5 +18,4 @@ data:
         config:
           clientID: {{ argocd_github_oauth_client_id }}
           clientSecret: $argocd-github-oauth:dex.github.clientSecret
-          orgs:
-          - name: glitchedmob
+          useLoginAsID: true
