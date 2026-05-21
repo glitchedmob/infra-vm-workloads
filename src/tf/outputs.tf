@@ -26,11 +26,6 @@ output "git_deploy_public_key_ssm_path" {
   value       = module.git_deploy_key.ssm_public_key_path
 }
 
-output "argocd_github_oauth_client_id_ssm_path" {
-  description = "SSM path for Argo CD GitHub OAuth client ID"
-  value       = aws_ssm_parameter.argocd_github_oauth_client_id.name
-}
-
 output "argocd_github_oauth_client_secret_ssm_path" {
   description = "SSM path for Argo CD GitHub OAuth client secret"
   value       = aws_ssm_parameter.argocd_github_oauth_client_secret.name

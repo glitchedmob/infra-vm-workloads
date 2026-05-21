@@ -9,12 +9,12 @@
         git_deploy_private_key: >-
           {{ lookup('amazon.aws.aws_ssm', ssm_git_deploy_private_key_path)
              if ssm_git_deploy_private_key_path is defined else omit }}
-        argocd_github_oauth_client_id: >-
-          {{ lookup('amazon.aws.aws_ssm', ssm_argocd_github_oauth_client_id_path)
-             if ssm_argocd_github_oauth_client_id_path is defined else omit }}
-        argocd_github_oauth_client_secret: >-
-          {{ lookup('amazon.aws.aws_ssm', ssm_argocd_github_oauth_client_secret_path)
-             if ssm_argocd_github_oauth_client_secret_path is defined else omit }}
+        eso_access_key_id: >-
+          {{ lookup('amazon.aws.aws_ssm', ssm_eso_access_key_id_path)
+             if ssm_eso_access_key_id_path is defined else omit }}
+        eso_secret_access_key: >-
+          {{ lookup('amazon.aws.aws_ssm', ssm_eso_secret_access_key_path)
+             if ssm_eso_secret_access_key_path is defined else omit }}
       run_once: true
 
     - name: Fetch GitHub SSH known_hosts
@@ -35,12 +35,11 @@
       ansible.builtin.set_fact:
         namespaces_manifest: "{{ lookup('file', playbook_dir ~ '/manifests/namespaces.yaml') }}"
         argocd_repo_secret_manifest: "{{ lookup('template', playbook_dir ~ '/manifests/argocd-repo-secret.yaml.j2') }}"
-        argocd_oauth_secret_manifest: "{{ lookup('template', playbook_dir ~ '/manifests/argocd-oauth-secret.yaml.j2') }}"
         argocd_ssh_known_hosts_manifest: "{{ lookup('template', playbook_dir ~ '/manifests/argocd-ssh-known-hosts-cm.yaml.j2') }}"
-        argocd_cm_manifest: "{{ lookup('template', playbook_dir ~ '/manifests/argocd-cm.yaml.j2') }}"
         argocd_cmd_params_cm_manifest: "{{ lookup('file', playbook_dir ~ '/manifests/argocd-cmd-params-cm.yaml') }}"
         argocd_rbac_cm_manifest: "{{ lookup('file', playbook_dir ~ '/manifests/argocd-rbac-cm.yaml') }}"
         argocd_root_app_manifest: "{{ lookup('file', playbook_dir ~ '/manifests/argocd-root-app.yaml') }}"
+        external_secrets_aws_creds_manifest: "{{ lookup('template', playbook_dir ~ '/manifests/external-secrets-aws-creds.yaml.j2') }}"
       run_once: true
 
     - name: Apply namespace manifest
@@ -72,20 +71,18 @@
       register: kubectl_apply_result
       changed_when: "'created' in (kubectl_apply_result.stdout | default('')) or 'configured' in (kubectl_apply_result.stdout | default(''))"
       loop:
-        - name: argocd config
-          manifest: "{{ argocd_cm_manifest }}"
         - name: argocd cmd params config
           manifest: "{{ argocd_cmd_params_cm_manifest }}"
         - name: argocd rbac config
           manifest: "{{ argocd_rbac_cm_manifest }}"
         - name: argocd repo secret
           manifest: "{{ argocd_repo_secret_manifest }}"
-        - name: argocd oauth secret
-          manifest: "{{ argocd_oauth_secret_manifest }}"
         - name: argocd ssh known hosts
           manifest: "{{ argocd_ssh_known_hosts_manifest }}"
         - name: argocd root app
           manifest: "{{ argocd_root_app_manifest }}"
+        - name: external-secrets aws creds
+          manifest: "{{ external_secrets_aws_creds_manifest }}"
       loop_control:
         label: "{{ item.name }}"
       run_once: true
