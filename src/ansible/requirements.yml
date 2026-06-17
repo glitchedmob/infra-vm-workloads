@@ -3,6 +3,7 @@ collections:
   - name: cloud.terraform
   - name: amazon.aws
   - name: ansible.posix
+  - name: artis3n.tailscale
   - name: community.general
   - name: https://github.com/k3s-io/k3s-ansible.git
     type: git
