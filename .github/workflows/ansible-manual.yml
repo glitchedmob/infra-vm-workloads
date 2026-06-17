@@ -10,6 +10,7 @@ on:
         options:
           - base-os-updates.yml
           - bootstrap.yml
+          - tailscale-headscale.yml
           - apply.yml
       initialize-terraform:
         description: Initialize Terraform first
