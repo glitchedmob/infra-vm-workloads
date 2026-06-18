@@ -28,4 +28,3 @@
         tailscale_authkey: "{{ tailscale_authkey_value }}"
         tailscale_args: >-
           --login-server={{ tailscale_login_server }}
-          --advertise-tags=tag:lz-k3s
