@@ -42,7 +42,7 @@
           # {{ ansible_managed | default('ANSIBLE MANAGED') }}
           [Service]
           {% for route in _ts_routes %}
-          ExecStartPost=/sbin/ip rule add to {{ route }} priority 2500 lookup main || true
+          ExecStartPost=-/sbin/ip rule add to {{ route }} priority 2500 lookup main
           {% endfor %}
         dest: /etc/systemd/system/tailscaled.service.d/route-fix.conf
         mode: "0644"
