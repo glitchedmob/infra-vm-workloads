@@ -28,7 +28,7 @@
 
     - name: Render Argo CD install manifest in memory
       ansible.builtin.set_fact:
-        argocd_install_manifest: "{{ lookup('url', 'https://raw.githubusercontent.com/argoproj/argo-cd/v3.4.4/manifests/install.yaml', split_lines=False) }}"
+        argocd_install_manifest: "{{ lookup('url', 'https://raw.githubusercontent.com/argoproj/argo-cd/v3.4.4/manifests/ha/install.yaml', split_lines=False) }}"
       run_once: true
 
     - name: Render manifest files in memory
