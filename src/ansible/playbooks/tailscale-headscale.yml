@@ -21,6 +21,35 @@
       ansible.builtin.set_fact:
         tailscale_authkey_value: "{{ lookup('amazon.aws.aws_ssm', ssm_tailscale_authkey_path) }}"
 
+    - name: Prefer local subnets over tailscale routes
+      ansible.builtin.shell: |
+        for subnet in {{ tailscale_local_subnets.replace(',', ' ') }}; do
+          ip rule add to "$subnet" priority 2500 lookup main 2>/dev/null || true
+        done
+      changed_when: false
+
+    - name: Create tailscaled drop-in directory
+      ansible.builtin.file:
+        path: /etc/systemd/system/tailscaled.service.d
+        state: directory
+        mode: "0755"
+
+    - name: Persist route fix via systemd drop-in
+      vars:
+        _ts_routes: "{{ tailscale_local_subnets.split(',') }}"
+      ansible.builtin.copy:
+        content: |
+          # {{ ansible_managed | default('ANSIBLE MANAGED') }}
+          [Service]
+          {% for route in _ts_routes %}
+          ExecStartPost=/sbin/ip rule add to {{ route }} priority 2500 lookup main || true
+          {% endfor %}
+        dest: /etc/systemd/system/tailscaled.service.d/route-fix.conf
+        mode: "0644"
+    - name: Reload systemd
+      ansible.builtin.systemd:
+        daemon_reload: true
+
     - name: Install and configure Tailscale
       ansible.builtin.include_role:
         name: artis3n.tailscale.machine
@@ -28,3 +57,12 @@
         tailscale_authkey: "{{ tailscale_authkey_value }}"
         tailscale_args: >-
           --login-server={{ tailscale_login_server }}
+          --accept-routes
+
+    - name: Wait for Tailscale to reconnect
+      ansible.builtin.command: tailscale status --json
+      register: _ts_status
+      until: (_ts_status.stdout | from_json).Self.Online
+      retries: 30
+      delay: 2
+      changed_when: false
