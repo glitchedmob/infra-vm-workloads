@@ -14,16 +14,19 @@ locals {
       node_name    = "x86-node-01"
       ipv4_address = "10.20.0.10"
       role         = "server"
+      memory_mb    = 16384
     }
     lz-k3s-02 = {
       node_name    = "x86-node-02"
       ipv4_address = "10.20.0.11"
       role         = "server"
+      memory_mb    = 12288
     }
     lz-k3s-04 = {
       node_name    = "x86-node-01"
       ipv4_address = "10.20.0.13"
       role         = "server"
+      memory_mb    = 16384
     }
   }
 }
@@ -48,7 +51,8 @@ module "k3s_vm" {
   os_id       = "debian13"
 
   cpu_cores      = 4
-  memory_mb      = 8192
+  cpu_type       = "x86-64-v3"
+  memory_mb      = each.value.memory_mb
   disk_size_gb   = 80
   network_bridge = local.vm_network_bridge
   network_cidr   = local.lz_cidr
