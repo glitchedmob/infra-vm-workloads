@@ -20,6 +20,11 @@ locals {
       ipv4_address = "10.20.0.11"
       role         = "server"
     }
+    lz-k3s-04 = {
+      node_name    = "x86-node-01"
+      ipv4_address = "10.20.0.13"
+      role         = "server"
+    }
   }
 }
 
