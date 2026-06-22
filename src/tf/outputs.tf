@@ -30,3 +30,21 @@ output "argocd_github_oauth_client_secret_ssm_path" {
   description = "SSM path for Argo CD GitHub OAuth client secret"
   value       = aws_ssm_parameter.argocd_github_oauth_client_secret.name
 }
+
+output "infisical_encryption_key_ssm_path" {
+  description = "SSM path for Infisical encryption key"
+  value       = aws_ssm_parameter.infisical_encryption_key.name
+  sensitive   = true
+}
+
+output "infisical_auth_secret_ssm_path" {
+  description = "SSM path for Infisical auth secret"
+  value       = aws_ssm_parameter.infisical_auth_secret.name
+  sensitive   = true
+}
+
+output "infisical_redis_password_ssm_path" {
+  description = "SSM path for Infisical Redis password"
+  value       = aws_ssm_parameter.infisical_redis_password.name
+  sensitive   = true
+}
