@@ -45,6 +45,7 @@
         argocd_github_oauth_secret_manifest: "{{ lookup('template', playbook_dir ~ '/manifests/argocd-github-oauth-secret.yaml.j2') }}"
         argocd_root_app_manifest: "{{ lookup('file', playbook_dir ~ '/manifests/argocd-root-app.yaml') }}"
         external_secrets_aws_creds_manifest: "{{ lookup('template', playbook_dir ~ '/manifests/external-secrets-aws-creds.yaml.j2') }}"
+        external_secrets_aws_creds_openbao_manifest: "{{ lookup('template', playbook_dir ~ '/manifests/external-secrets-aws-creds-openbao.yaml.j2') }}"
       run_once: true
 
     - name: Apply namespace manifest
@@ -110,6 +111,16 @@
           manifest: "{{ external_secrets_aws_creds_manifest }}"
       loop_control:
         label: "{{ item.name }}"
+      run_once: true
+
+    - name: Apply external-secrets aws creds (openbao ns)
+      ansible.builtin.command: kubectl apply -f -
+      args:
+        stdin: "{{ external_secrets_aws_creds_openbao_manifest }}"
+      environment:
+        KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+      register: kubectl_apply_result
+      changed_when: "'created' in (kubectl_apply_result.stdout | default('')) or 'configured' in (kubectl_apply_result.stdout | default(''))"
       run_once: true
 
     - name: Restart argocd-server to pick up final config
