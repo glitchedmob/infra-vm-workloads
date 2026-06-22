@@ -31,6 +31,17 @@ locals {
   }
 }
 
+resource "aws_kms_key" "openbao_unseal" {
+  description             = "KMS key for OpenBao auto-unseal"
+  deletion_window_in_days = 7
+  enable_key_rotation     = true
+}
+
+resource "aws_kms_alias" "openbao_unseal" {
+  name          = "alias/openbao-unseal"
+  target_key_id = aws_kms_key.openbao_unseal.key_id
+}
+
 module "ssh_key" {
   source               = "git::https://github.com/glitchedmob/infra-shared.git//src/tf/modules/ssh-key?ref=main"
   name                 = "infra-vm-workloads"
