@@ -15,6 +15,9 @@
         eso_secret_access_key: >-
           {{ lookup('amazon.aws.aws_ssm', ssm_eso_secret_access_key_path)
              if ssm_eso_secret_access_key_path is defined else omit }}
+        argocd_github_oauth_client_secret: >-
+          {{ lookup('amazon.aws.aws_ssm', ssm_argocd_github_oauth_client_secret_path)
+             if ssm_argocd_github_oauth_client_secret_path is defined else omit }}
       run_once: true
 
     - name: Fetch GitHub SSH known_hosts
@@ -38,6 +41,8 @@
         argocd_ssh_known_hosts_manifest: "{{ lookup('template', playbook_dir ~ '/manifests/argocd-ssh-known-hosts-cm.yaml.j2') }}"
         argocd_cmd_params_cm_manifest: "{{ lookup('file', playbook_dir ~ '/manifests/argocd-cmd-params-cm.yaml') }}"
         argocd_rbac_cm_manifest: "{{ lookup('file', playbook_dir ~ '/manifests/argocd-rbac-cm.yaml') }}"
+        argocd_cm_manifest: "{{ lookup('file', playbook_dir ~ '/manifests/argocd-cm.yaml') }}"
+        argocd_github_oauth_secret_manifest: "{{ lookup('template', playbook_dir ~ '/manifests/argocd-github-oauth-secret.yaml.j2') }}"
         argocd_root_app_manifest: "{{ lookup('file', playbook_dir ~ '/manifests/argocd-root-app.yaml') }}"
         external_secrets_aws_creds_manifest: "{{ lookup('template', playbook_dir ~ '/manifests/external-secrets-aws-creds.yaml.j2') }}"
       run_once: true
@@ -52,10 +57,30 @@
       changed_when: "'created' in (kubectl_apply_result.stdout | default('')) or 'configured' in (kubectl_apply_result.stdout | default(''))"
       run_once: true
 
+    - name: Apply Argo CD GitHub OAuth secret
+      ansible.builtin.command: kubectl apply -f -
+      args:
+        stdin: "{{ argocd_github_oauth_secret_manifest }}"
+      environment:
+        KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+      register: kubectl_apply_result
+      changed_when: "'created' in (kubectl_apply_result.stdout | default('')) or 'configured' in (kubectl_apply_result.stdout | default(''))"
+      run_once: true
+
     - name: Apply Argo CD install manifest (server-side)
       ansible.builtin.command: kubectl apply --server-side --force-conflicts -n argocd -f -
       args:
         stdin: "{{ argocd_install_manifest }}"
+      environment:
+        KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+      register: kubectl_apply_result
+      changed_when: "'created' in (kubectl_apply_result.stdout | default('')) or 'configured' in (kubectl_apply_result.stdout | default(''))"
+      run_once: true
+
+    - name: Apply Argo CD ConfigMap
+      ansible.builtin.command: kubectl apply -f -
+      args:
+        stdin: "{{ argocd_cm_manifest }}"
       environment:
         KUBECONFIG: /etc/rancher/k3s/k3s.yaml
       register: kubectl_apply_result
@@ -85,4 +110,11 @@
           manifest: "{{ external_secrets_aws_creds_manifest }}"
       loop_control:
         label: "{{ item.name }}"
+      run_once: true
+
+    - name: Restart argocd-server to pick up final config
+      ansible.builtin.command: kubectl rollout restart deploy/argocd-server -n argocd
+      environment:
+        KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+      changed_when: false
       run_once: true

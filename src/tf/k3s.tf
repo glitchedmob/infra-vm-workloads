@@ -100,15 +100,16 @@ resource "ansible_host" "workload" {
   ]
 
   variables = {
-    ansible_host                    = each.value.ipv4_address
-    ansible_user                    = local.vm_user
-    node_name                       = each.value.node_name
-    ssm_private_key_path            = module.ssh_key.ssm_path
-    ssm_git_deploy_private_key_path = module.git_deploy_key.ssm_path
-    ssm_eso_access_key_id_path      = local.ssm_eso_access_key_id_path
-    ssm_eso_secret_access_key_path  = local.ssm_eso_secret_access_key_path
-    ssm_tailscale_authkey_path      = "/homelab/headscale/lz-k3s/${each.key}-auth-key"
-    proxmox_vm_role                 = each.value.role
-    ansible_ssh_use_ssh_agent       = "false"
+    ansible_host                               = each.value.ipv4_address
+    ansible_user                               = local.vm_user
+    node_name                                  = each.value.node_name
+    ssm_private_key_path                       = module.ssh_key.ssm_path
+    ssm_git_deploy_private_key_path            = module.git_deploy_key.ssm_path
+    ssm_eso_access_key_id_path                 = local.ssm_eso_access_key_id_path
+    ssm_eso_secret_access_key_path             = local.ssm_eso_secret_access_key_path
+    ssm_argocd_github_oauth_client_secret_path = aws_ssm_parameter.argocd_github_oauth_client_secret.name
+    ssm_tailscale_authkey_path                 = "/homelab/headscale/lz-k3s/${each.key}-auth-key"
+    proxmox_vm_role                            = each.value.role
+    ansible_ssh_use_ssh_agent                  = "false"
   }
 }
