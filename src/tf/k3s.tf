@@ -15,18 +15,21 @@ locals {
       ipv4_address = "10.20.0.10"
       role         = "server"
       memory_mb    = 16384
+      cpu_type     = "x86-64-v3"
     }
     lz-k3s-02 = {
       node_name    = "x86-node-02"
       ipv4_address = "10.20.0.11"
       role         = "server"
       memory_mb    = 12288
+      cpu_type     = "x86-64-v3"
     }
     lz-k3s-03 = {
       node_name    = "x86-node-01"
       ipv4_address = "10.20.0.12"
       role         = "server"
       memory_mb    = 16384
+      cpu_type     = "x86-64-v3"
     }
   }
 }
@@ -62,7 +65,7 @@ module "k3s_vm" {
   os_id       = "debian13"
 
   cpu_cores      = 4
-  cpu_type       = "x86-64-v3"
+  cpu_type       = each.value.cpu_type
   memory_mb      = each.value.memory_mb
   disk_size_gb   = 80
   network_bridge = local.vm_network_bridge
@@ -132,13 +135,26 @@ resource "ansible_group" "k3s_servers" {
   name = "k3s_servers"
 }
 
+resource "ansible_group" "k3s_x86_64_v3" {
+  name     = "k3s_x86_64_v3"
+  children = []
+}
+
+resource "ansible_group" "k3s_x86_64_v2" {
+  name     = "k3s_x86_64_v2"
+  children = []
+}
+
 resource "ansible_group" "k3s_agents" {
   name = "k3s_agents"
 }
 
 resource "ansible_group" "k3s_cluster" {
-  name     = "k3s_cluster"
-  children = [ansible_group.k3s_servers.name, ansible_group.k3s_agents.name]
+  name = "k3s_cluster"
+  children = [
+    ansible_group.k3s_servers.name,
+    ansible_group.k3s_agents.name,
+  ]
 }
 
 resource "ansible_host" "workload" {
@@ -148,6 +164,7 @@ resource "ansible_host" "workload" {
   groups = [
     "k3s_cluster",
     each.value.role == "server" ? "k3s_servers" : "k3s_agents",
+    each.value.cpu_type == "x86-64-v2-AES" ? "k3s_x86_64_v2" : "k3s_x86_64_v3",
   ]
 
   variables = {
