@@ -62,7 +62,9 @@
         external_secrets_aws_creds_manifest: "{{ lookup('template', playbook_dir ~ '/manifests/external-secrets-aws-creds.yaml.j2') }}"
         external_secrets_aws_creds_openbao_manifest: "{{ lookup('template', playbook_dir ~ '/manifests/external-secrets-aws-creds-openbao.yaml.j2') }}"
         grafana_github_oauth_manifest: "{{ lookup('template', playbook_dir ~ '/manifests/grafana-github-oauth-secret.yaml.j2') }}"
-        seaweedfs_s3_secret_manifest: "{{ lookup('template', playbook_dir ~ '/manifests/seaweedfs-s3-secret.yaml.j2') }}"
+        seaweedfs_s3_admin_manifest: "{{ lookup('template', playbook_dir ~ '/manifests/seaweedfs-s3-admin.yaml.j2') }}"
+        seaweedfs_s3_observability_manifest: "{{ lookup('template', playbook_dir ~ '/manifests/seaweedfs-s3-observability.yaml.j2') }}"
+        seaweedfs_s3_monitoring_manifest: "{{ lookup('template', playbook_dir ~ '/manifests/seaweedfs-s3-monitoring.yaml.j2') }}"
       run_once: true
 
     - name: Apply namespace manifest
@@ -128,8 +130,12 @@
           manifest: "{{ external_secrets_aws_creds_manifest }}"
         - name: grafana github oauth secret
           manifest: "{{ grafana_github_oauth_manifest }}"
-        - name: seaweedfs s3 secret
-          manifest: "{{ seaweedfs_s3_secret_manifest }}"
+        - name: seaweedfs s3 admin secret
+          manifest: "{{ seaweedfs_s3_admin_manifest }}"
+        - name: seaweedfs s3 observability secret
+          manifest: "{{ seaweedfs_s3_observability_manifest }}"
+        - name: seaweedfs s3 monitoring secret
+          manifest: "{{ seaweedfs_s3_monitoring_manifest }}"
       loop_control:
         label: "{{ item.name }}"
       run_once: true
