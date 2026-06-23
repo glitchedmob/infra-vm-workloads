@@ -9,6 +9,20 @@
     api_endpoint: "{{ hostvars[groups[server_group][0]].ansible_host | default(groups[server_group][0]) }}"
   roles:
     - k3s.orchestration.prereq
+  tasks:
+    - name: Install Longhorn prerequisite packages
+      ansible.builtin.apt:
+        name:
+          - open-iscsi
+          - nfs-common
+        state: present
+        update_cache: true
+
+    - name: Start and enable iscsid service
+      ansible.builtin.systemd:
+        name: iscsid
+        state: started
+        enabled: true
 
 - name: Install K3s server nodes
   hosts: k3s_servers
