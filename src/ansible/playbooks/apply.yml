@@ -18,6 +18,9 @@
         argocd_github_oauth_client_secret: >-
           {{ lookup('amazon.aws.aws_ssm', ssm_argocd_github_oauth_client_secret_path)
              if ssm_argocd_github_oauth_client_secret_path is defined else omit }}
+        grafana_github_oauth_client_secret: >-
+          {{ lookup('amazon.aws.aws_ssm', ssm_grafana_github_oauth_client_secret_path)
+             if ssm_grafana_github_oauth_client_secret_path is defined else omit }}
       run_once: true
 
     - name: Fetch GitHub SSH known_hosts
@@ -46,6 +49,7 @@
         argocd_root_app_manifest: "{{ lookup('file', playbook_dir ~ '/manifests/argocd-root-app.yaml') }}"
         external_secrets_aws_creds_manifest: "{{ lookup('template', playbook_dir ~ '/manifests/external-secrets-aws-creds.yaml.j2') }}"
         external_secrets_aws_creds_openbao_manifest: "{{ lookup('template', playbook_dir ~ '/manifests/external-secrets-aws-creds-openbao.yaml.j2') }}"
+        grafana_github_oauth_manifest: "{{ lookup('template', playbook_dir ~ '/manifests/grafana-github-oauth-secret.yaml.j2') }}"
       run_once: true
 
     - name: Apply namespace manifest
@@ -109,6 +113,8 @@
           manifest: "{{ argocd_root_app_manifest }}"
         - name: external-secrets aws creds
           manifest: "{{ external_secrets_aws_creds_manifest }}"
+        - name: grafana github oauth secret
+          manifest: "{{ grafana_github_oauth_manifest }}"
       loop_control:
         label: "{{ item.name }}"
       run_once: true
