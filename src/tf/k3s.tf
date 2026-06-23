@@ -95,46 +95,10 @@ resource "aws_ssm_parameter" "argocd_github_oauth_client_secret" {
   value_wo_version = 1
 }
 
-ephemeral "random_password" "infisical_encryption_key" {
-  length  = 32
-  special = false
-}
-
-ephemeral "random_password" "infisical_auth_secret" {
-  length  = 32
-  special = false
-}
-
-ephemeral "random_password" "infisical_redis_password" {
-  length  = 32
-  special = false
-}
-
 resource "aws_ssm_parameter" "grafana_github_oauth_client_secret" {
   name             = "${local.ssm_key_prefix}/grafana-github-oauth-client-secret"
   type             = "SecureString"
   value_wo         = "CHANGEME"
-  value_wo_version = 1
-}
-
-resource "aws_ssm_parameter" "infisical_encryption_key" {
-  name             = "${local.ssm_key_prefix}/infisical-encryption-key"
-  type             = "SecureString"
-  value_wo         = ephemeral.random_password.infisical_encryption_key.result
-  value_wo_version = 1
-}
-
-resource "aws_ssm_parameter" "infisical_auth_secret" {
-  name             = "${local.ssm_key_prefix}/infisical-auth-secret"
-  type             = "SecureString"
-  value_wo         = ephemeral.random_password.infisical_auth_secret.result
-  value_wo_version = 1
-}
-
-resource "aws_ssm_parameter" "infisical_redis_password" {
-  name             = "${local.ssm_key_prefix}/infisical-redis-password"
-  type             = "SecureString"
-  value_wo         = ephemeral.random_password.infisical_redis_password.result
   value_wo_version = 1
 }
 
