@@ -21,6 +21,18 @@
         grafana_github_oauth_client_secret: >-
           {{ lookup('amazon.aws.aws_ssm', ssm_grafana_github_oauth_client_secret_path)
              if ssm_grafana_github_oauth_client_secret_path is defined else omit }}
+        seaweedfs_s3_admin_access_key: >-
+          {{ lookup('amazon.aws.aws_ssm', ssm_seaweedfs_s3_admin_access_key_path)
+             if ssm_seaweedfs_s3_admin_access_key_path is defined else omit }}
+        seaweedfs_s3_admin_secret_key: >-
+          {{ lookup('amazon.aws.aws_ssm', ssm_seaweedfs_s3_admin_secret_key_path)
+             if ssm_seaweedfs_s3_admin_secret_key_path is defined else omit }}
+        seaweedfs_s3_observability_access_key: >-
+          {{ lookup('amazon.aws.aws_ssm', ssm_seaweedfs_s3_obs_access_key_path)
+             if ssm_seaweedfs_s3_obs_access_key_path is defined else omit }}
+        seaweedfs_s3_observability_secret_key: >-
+          {{ lookup('amazon.aws.aws_ssm', ssm_seaweedfs_s3_obs_secret_key_path)
+             if ssm_seaweedfs_s3_obs_secret_key_path is defined else omit }}
       run_once: true
 
     - name: Fetch GitHub SSH known_hosts
@@ -50,6 +62,7 @@
         external_secrets_aws_creds_manifest: "{{ lookup('template', playbook_dir ~ '/manifests/external-secrets-aws-creds.yaml.j2') }}"
         external_secrets_aws_creds_openbao_manifest: "{{ lookup('template', playbook_dir ~ '/manifests/external-secrets-aws-creds-openbao.yaml.j2') }}"
         grafana_github_oauth_manifest: "{{ lookup('template', playbook_dir ~ '/manifests/grafana-github-oauth-secret.yaml.j2') }}"
+        seaweedfs_s3_secret_manifest: "{{ lookup('template', playbook_dir ~ '/manifests/seaweedfs-s3-secret.yaml.j2') }}"
       run_once: true
 
     - name: Apply namespace manifest
@@ -115,6 +128,8 @@
           manifest: "{{ external_secrets_aws_creds_manifest }}"
         - name: grafana github oauth secret
           manifest: "{{ grafana_github_oauth_manifest }}"
+        - name: seaweedfs s3 secret
+          manifest: "{{ seaweedfs_s3_secret_manifest }}"
       loop_control:
         label: "{{ item.name }}"
       run_once: true

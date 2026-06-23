@@ -102,6 +102,42 @@ resource "aws_ssm_parameter" "grafana_github_oauth_client_secret" {
   value_wo_version = 1
 }
 
+ephemeral "random_password" "seaweedfs_admin_secret_key" {
+  length  = 40
+  special = false
+}
+
+ephemeral "random_password" "seaweedfs_observability_secret_key" {
+  length  = 40
+  special = false
+}
+
+resource "aws_ssm_parameter" "seaweedfs_s3_admin_access_key" {
+  name  = "${local.ssm_key_prefix}/seaweedfs-s3-admin-access-key"
+  type  = "SecureString"
+  value = "seaweedfs-admin"
+}
+
+resource "aws_ssm_parameter" "seaweedfs_s3_admin_secret_key" {
+  name             = "${local.ssm_key_prefix}/seaweedfs-s3-admin-secret-key"
+  type             = "SecureString"
+  value_wo         = ephemeral.random_password.seaweedfs_admin_secret_key.result
+  value_wo_version = 1
+}
+
+resource "aws_ssm_parameter" "seaweedfs_s3_observability_access_key" {
+  name  = "${local.ssm_key_prefix}/seaweedfs-s3-observability-access-key"
+  type  = "SecureString"
+  value = "seaweedfs-observability"
+}
+
+resource "aws_ssm_parameter" "seaweedfs_s3_observability_secret_key" {
+  name             = "${local.ssm_key_prefix}/seaweedfs-s3-observability-secret-key"
+  type             = "SecureString"
+  value_wo         = ephemeral.random_password.seaweedfs_observability_secret_key.result
+  value_wo_version = 1
+}
+
 resource "ansible_group" "k3s_servers" {
   name = "k3s_servers"
 }
@@ -148,6 +184,10 @@ resource "ansible_host" "workload" {
     ssm_eso_secret_access_key_path              = local.ssm_eso_secret_access_key_path
     ssm_argocd_github_oauth_client_secret_path  = aws_ssm_parameter.argocd_github_oauth_client_secret.name
     ssm_grafana_github_oauth_client_secret_path = aws_ssm_parameter.grafana_github_oauth_client_secret.name
+    ssm_seaweedfs_s3_admin_access_key_path      = aws_ssm_parameter.seaweedfs_s3_admin_access_key.name
+    ssm_seaweedfs_s3_admin_secret_key_path      = aws_ssm_parameter.seaweedfs_s3_admin_secret_key.name
+    ssm_seaweedfs_s3_obs_access_key_path        = aws_ssm_parameter.seaweedfs_s3_observability_access_key.name
+    ssm_seaweedfs_s3_obs_secret_key_path        = aws_ssm_parameter.seaweedfs_s3_observability_secret_key.name
     ssm_tailscale_authkey_path                  = "/homelab/headscale/lz-k3s/${each.key}-auth-key"
     proxmox_vm_role                             = each.value.role
     ansible_ssh_use_ssh_agent                   = "false"
