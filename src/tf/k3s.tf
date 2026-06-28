@@ -102,6 +102,73 @@ resource "aws_ssm_parameter" "grafana_github_oauth_client_secret" {
   value_wo_version = 1
 }
 
+resource "aws_ssm_parameter" "dex_github_oauth_client_secret" {
+  name             = "${local.ssm_key_prefix}/dex-github-oauth-client-secret"
+  type             = "SecureString"
+  value_wo         = "CHANGEME"
+  value_wo_version = 1
+}
+
+ephemeral "random_password" "dex_client_argocd" {
+  length  = 40
+  special = false
+}
+
+ephemeral "random_password" "dex_client_grafana" {
+  length  = 40
+  special = false
+}
+
+ephemeral "random_password" "dex_client_oauth2_proxy" {
+  length  = 40
+  special = false
+}
+
+ephemeral "random_password" "dex_client_openbao" {
+  length  = 40
+  special = false
+}
+
+ephemeral "random_password" "oauth2_proxy_cookie" {
+  length  = 32
+  special = false
+}
+
+resource "aws_ssm_parameter" "dex_client_argocd_secret" {
+  name             = "${local.ssm_key_prefix}/dex-client-argocd-secret"
+  type             = "SecureString"
+  value_wo         = ephemeral.random_password.dex_client_argocd.result
+  value_wo_version = 1
+}
+
+resource "aws_ssm_parameter" "dex_client_grafana_secret" {
+  name             = "${local.ssm_key_prefix}/dex-client-grafana-secret"
+  type             = "SecureString"
+  value_wo         = ephemeral.random_password.dex_client_grafana.result
+  value_wo_version = 1
+}
+
+resource "aws_ssm_parameter" "dex_client_oauth2_proxy_secret" {
+  name             = "${local.ssm_key_prefix}/dex-client-oauth2-proxy-secret"
+  type             = "SecureString"
+  value_wo         = ephemeral.random_password.dex_client_oauth2_proxy.result
+  value_wo_version = 1
+}
+
+resource "aws_ssm_parameter" "dex_client_openbao_secret" {
+  name             = "${local.ssm_key_prefix}/dex-client-openbao-secret"
+  type             = "SecureString"
+  value_wo         = ephemeral.random_password.dex_client_openbao.result
+  value_wo_version = 1
+}
+
+resource "aws_ssm_parameter" "oauth2_proxy_cookie_secret" {
+  name             = "${local.ssm_key_prefix}/oauth2-proxy-cookie-secret"
+  type             = "SecureString"
+  value_wo         = ephemeral.random_password.oauth2_proxy_cookie.result
+  value_wo_version = 1
+}
+
 ephemeral "random_password" "seaweedfs_admin_secret_key" {
   length  = 40
   special = false

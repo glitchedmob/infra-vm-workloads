@@ -31,6 +31,11 @@ output "argocd_github_oauth_client_secret_ssm_path" {
   value       = aws_ssm_parameter.argocd_github_oauth_client_secret.name
 }
 
+output "dex_github_oauth_client_secret_ssm_path" {
+  description = "SSM path for Dex GitHub OAuth client secret"
+  value       = aws_ssm_parameter.dex_github_oauth_client_secret.name
+}
+
 output "seaweedfs_s3_admin_access_key_ssm_path" {
   description = "SSM path for SeaweedFS S3 admin access key"
   value       = aws_ssm_parameter.seaweedfs_s3_admin_access_key.name
