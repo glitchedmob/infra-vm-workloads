@@ -10,6 +10,17 @@
   roles:
     - k3s.orchestration.prereq
   tasks:
+    - name: Raise inotify limits for workloads with many file watchers
+      ansible.posix.sysctl:
+        name: "{{ item.key }}"
+        value: "{{ item.value }}"
+        state: present
+        reload: true
+        sysctl_file: /etc/sysctl.d/99-k3s-inotify.conf
+      loop:
+        - { key: "fs.inotify.max_user_instances", value: "8192" }
+        - { key: "fs.inotify.max_user_watches", value: "524288" }
+
     - name: Install Longhorn prerequisite packages
       ansible.builtin.apt:
         name:
