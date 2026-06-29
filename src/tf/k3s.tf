@@ -34,15 +34,15 @@ locals {
   }
 }
 
-resource "aws_kms_key" "openbao_unseal" {
-  description             = "KMS key for OpenBao auto-unseal"
-  deletion_window_in_days = 7
-  enable_key_rotation     = true
+ephemeral "random_bytes" "openbao_unseal" {
+  length = 32
 }
 
-resource "aws_kms_alias" "openbao_unseal" {
-  name          = "alias/openbao-unseal"
-  target_key_id = aws_kms_key.openbao_unseal.key_id
+resource "aws_ssm_parameter" "openbao_unseal_key" {
+  name             = "${local.ssm_key_prefix}/openbao-unseal-key"
+  type             = "SecureString"
+  value_wo         = ephemeral.random_bytes.openbao_unseal.base64
+  value_wo_version = 1
 }
 
 module "ssh_key" {
