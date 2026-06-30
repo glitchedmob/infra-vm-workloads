@@ -134,31 +134,15 @@ ephemeral "random_password" "oauth2_proxy_cookie" {
   special = false
 }
 
-resource "aws_ssm_parameter" "dex_client_argocd_secret" {
-  name             = "${local.ssm_key_prefix}/dex-client-argocd-secret"
-  type             = "SecureString"
-  value_wo         = ephemeral.random_password.dex_client_argocd.result
-  value_wo_version = 1
-}
-
-resource "aws_ssm_parameter" "dex_client_grafana_secret" {
-  name             = "${local.ssm_key_prefix}/dex-client-grafana-secret"
-  type             = "SecureString"
-  value_wo         = ephemeral.random_password.dex_client_grafana.result
-  value_wo_version = 1
-}
-
-resource "aws_ssm_parameter" "dex_client_oauth2_proxy_secret" {
-  name             = "${local.ssm_key_prefix}/dex-client-oauth2-proxy-secret"
-  type             = "SecureString"
-  value_wo         = ephemeral.random_password.dex_client_oauth2_proxy.result
-  value_wo_version = 1
-}
-
-resource "aws_ssm_parameter" "dex_client_openbao_secret" {
-  name             = "${local.ssm_key_prefix}/dex-client-openbao-secret"
-  type             = "SecureString"
-  value_wo         = ephemeral.random_password.dex_client_openbao.result
+resource "aws_ssm_parameter" "dex_client_secrets" {
+  name = "${local.ssm_key_prefix}/dex-client-secrets"
+  type = "SecureString"
+  value_wo = jsonencode({
+    argocdClientSecret      = ephemeral.random_password.dex_client_argocd.result
+    grafanaClientSecret     = ephemeral.random_password.dex_client_grafana.result
+    oauth2ProxyClientSecret = ephemeral.random_password.dex_client_oauth2_proxy.result
+    openbaoClientSecret     = ephemeral.random_password.dex_client_openbao.result
+  })
   value_wo_version = 1
 }
 
