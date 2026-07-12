@@ -1,4 +1,4 @@
-.PHONY: help tf-init tf-plan tf-show tf-output tf-apply tf-validate tf-format tf-lint-fix tf-providers-lock \
+.PHONY: help tf-init tf-plan tf-show tf-output tf-state tf-apply tf-validate tf-format tf-lint-fix tf-providers-lock \
         ansible ansible-shell ansible-install ansible-inventory ansible-lint ansible-lint-fix
 
 TF_DIR := src/tf
@@ -12,6 +12,7 @@ help:
 	@echo "  Plan:              make tf-plan [ARGS='-out=tfplan -destroy']"
 	@echo "  Show:              make tf-show ARGS=<planfile>"
 	@echo "  Output:            make tf-output [ARGS='-json']"
+	@echo "  State:             make tf-state ARGS='<state cmd>'"
 	@echo "  Apply:             make tf-apply [ARGS='-auto-approve tfplan']"
 	@echo "  Validate:          make tf-validate"
 	@echo "  Format check:      make tf-format"
@@ -37,6 +38,9 @@ tf-show:
 
 tf-output:
 	@source "$(ENVRC)" && tofu -chdir=$(TF_DIR) output $(ARGS)
+
+tf-state:
+	@source "$(ENVRC)" && tofu -chdir=$(TF_DIR) state $(ARGS)
 
 tf-apply:
 	@source "$(ENVRC)" && tofu -chdir=$(TF_DIR) apply $(ARGS)
