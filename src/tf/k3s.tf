@@ -52,6 +52,21 @@ module "ssh_key" {
   ssm_private_key_path = "${local.ssm_key_prefix}/ssh-private-key"
 }
 
+module "k3s_data_owner" {
+  for_each = local.k3s_vms
+
+  source = "git::https://github.com/glitchedmob/infra-shared.git//src/tf/modules/proxmox-data-owner?ref=main"
+
+  name         = "${each.key}-data"
+  description  = "Persistent data disk owner for ${each.key}"
+  tags         = ["tf", "lz", "k3s", "data-owner"]
+  node_name    = each.value.node_name
+  pool_id      = local.proxmox_pool_id
+  datastore_id = "vmdata"
+  disk_size_gb = 200
+  disk_serial  = "${each.key}-data"
+}
+
 module "k3s_vm" {
   for_each = local.k3s_vms
 
@@ -64,10 +79,13 @@ module "k3s_vm" {
   pool_id     = local.proxmox_pool_id
   os_id       = "debian13"
 
-  cpu_cores      = 4
-  cpu_type       = each.value.cpu_type
-  memory_mb      = each.value.memory_mb
-  disk_size_gb   = 80
+  cpu_cores    = 4
+  cpu_type     = each.value.cpu_type
+  memory_mb    = each.value.memory_mb
+  disk_size_gb = 80
+  data_disks = {
+    scsi1 = module.k3s_data_owner[each.key].disk
+  }
   network_bridge = local.vm_network_bridge
   network_cidr   = local.lz_cidr
   ipv4_address   = each.value.ipv4_address
@@ -240,6 +258,7 @@ resource "ansible_host" "workload" {
     ssm_seaweedfs_s3_obs_access_key_path        = aws_ssm_parameter.seaweedfs_s3_observability_access_key.name
     ssm_seaweedfs_s3_obs_secret_key_path        = aws_ssm_parameter.seaweedfs_s3_observability_secret_key.name
     ssm_tailscale_authkey_path                  = "/homelab/headscale/lz-k3s/${each.key}-auth-key"
+    data_disk_serial                            = module.k3s_data_owner[each.key].disk.serial
     proxmox_vm_role                             = each.value.role
     ansible_ssh_use_ssh_agent                   = "false"
   }
