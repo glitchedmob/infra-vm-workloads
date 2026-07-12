@@ -3,9 +3,6 @@ bootstrap_argocd_force_conflicts: false
 bootstrap_argocd_wait_timeout: 10m
 bootstrap_argocd_health_retries: 120
 bootstrap_argocd_health_delay: 10
-bootstrap_argocd_github_known_hosts: >-
-  github.com ssh-ed25519
-  AAAAC3NzaC1lZDI1NTE5AAAAIOMqqnkVzrm0SdG6UOoqKLsabgH5C9okWi0dh2l9GKJl
 bootstrap_argocd_required_crds:
   - applications.argoproj.io
   - applicationsets.argoproj.io

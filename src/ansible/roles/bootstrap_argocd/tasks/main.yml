@@ -11,6 +11,15 @@
   no_log: true
   run_once: true
 
+- name: Fetch GitHub SSH known hosts
+  ansible.builtin.command:
+    cmd: ssh-keyscan -t ed25519 github.com
+  register: bootstrap_argocd_github_known_hosts
+  changed_when: false
+  delegate_to: localhost
+  become: false
+  run_once: true
+
 - name: Render Argo CD bootstrap manifests in memory
   ansible.builtin.set_fact:
     bootstrap_argocd_namespaces_manifest: "{{ lookup('file', role_path ~ '/files/namespaces.yaml') }}"
@@ -61,7 +70,7 @@
         bootstrap_argocd_install_manifest: >-
           {{ lookup(
                'url',
-               'https://raw.githubusercontent.com/argoproj/argo-cd/v3.4.4/manifests/ha/install.yaml',
+               'https://raw.githubusercontent.com/argoproj/argo-cd/v3.4.5/manifests/ha/install.yaml',
                split_lines=False
              ) }}
       run_once: true
