@@ -29,7 +29,7 @@ locals {
       ipv4_address = "10.20.0.12"
       role         = "server"
       memory_mb    = 16 * 1024
-      cpu_type     = "x86-64-v2"
+      cpu_type     = "x86-64-v2-AES"
     }
   }
 }

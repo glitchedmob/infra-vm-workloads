@@ -31,7 +31,7 @@ resource "ansible_host" "workload" {
   groups = [
     "k3s_cluster",
     each.value.role == "server" ? "k3s_servers" : "k3s_agents",
-    each.value.cpu_type == "x86-64-v2-AES" ? "k3s_x86_64_v2" : "k3s_x86_64_v3",
+    contains(["x86-64-v2", "x86-64-v2-AES"], each.value.cpu_type) ? "k3s_x86_64_v2" : "k3s_x86_64_v3",
   ]
 
   variables = {

@@ -11,6 +11,7 @@ module "k3s_data_owner" {
   datastore_id = "vmdata"
   disk_size_gb = 200
   disk_serial  = "${each.key}-data"
+  protect = false
 }
 
 module "k3s_vm" {
