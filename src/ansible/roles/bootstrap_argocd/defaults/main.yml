@@ -1,2 +1,35 @@
 ---
 bootstrap_argocd_force_conflicts: false
+bootstrap_argocd_wait_timeout: 10m
+bootstrap_argocd_health_retries: 120
+bootstrap_argocd_health_delay: 10
+bootstrap_argocd_github_known_hosts: >-
+  github.com ssh-ed25519
+  AAAAC3NzaC1lZDI1NTE5AAAAIOMqqnkVzrm0SdG6UOoqKLsabgH5C9okWi0dh2l9GKJl
+bootstrap_argocd_required_crds:
+  - applications.argoproj.io
+  - applicationsets.argoproj.io
+  - appprojects.argoproj.io
+bootstrap_argocd_operator_crds:
+  - certificates.cert-manager.io
+  - clustersecretstores.external-secrets.io
+  - clusters.postgresql.cnpg.io
+  - prometheuses.monitoring.coreos.com
+  - bundles.trust.cert-manager.io
+  - opentelemetrycollectors.opentelemetry.io
+  - volumes.longhorn.io
+bootstrap_argocd_platform_applications:
+  - argocd-install
+  - bootstrap-config
+  - grafana-infra
+  - seaweedfs-db
+  - seaweedfs
+  - dex
+  - oauth2-proxy
+  - openbao
+  - kube-prometheus-stack
+  - thanos
+  - loki
+  - tempo
+  - otel-collector
+  - alloy

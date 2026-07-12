@@ -11,39 +11,24 @@
   no_log: true
   run_once: true
 
-- name: Fetch GitHub SSH known_hosts
-  ansible.builtin.command:
-    cmd: ssh-keyscan -t ed25519 github.com
-  register: bootstrap_argocd_github_known_hosts
-  changed_when: false
-  delegate_to: localhost
-  become: false
-  run_once: true
-
-- name: Render Argo CD install manifest in memory
-  ansible.builtin.set_fact:
-    bootstrap_argocd_install_manifest: >-
-      {{ lookup(
-           'url',
-           'https://raw.githubusercontent.com/argoproj/argo-cd/v3.4.4/manifests/ha/install.yaml',
-           split_lines=False
-         ) }}
-  run_once: true
-
 - name: Render Argo CD bootstrap manifests in memory
   ansible.builtin.set_fact:
     bootstrap_argocd_namespaces_manifest: "{{ lookup('file', role_path ~ '/files/namespaces.yaml') }}"
+    bootstrap_argocd_projects_manifest: "{{ lookup('file', role_path ~ '/files/argocd-projects.yaml') }}"
+    bootstrap_argocd_projects_root_manifest: "{{ lookup('file', role_path ~ '/files/argocd-projects-root.yaml') }}"
+    bootstrap_argocd_operators_root_manifest: "{{ lookup('file', role_path ~ '/files/argocd-operators-root.yaml') }}"
+    bootstrap_argocd_platform_root_manifest: "{{ lookup('file', role_path ~ '/files/argocd-platform-root.yaml') }}"
+    bootstrap_argocd_apps_root_manifest: "{{ lookup('file', role_path ~ '/files/argocd-apps-root.yaml') }}"
     bootstrap_argocd_repo_secret_manifest: "{{ lookup('template', role_path ~ '/templates/argocd-repo-secret.yaml.j2') }}"
     bootstrap_argocd_ssh_known_hosts_manifest: "{{ lookup('template', role_path ~ '/templates/argocd-ssh-known-hosts-cm.yaml.j2') }}"
-    bootstrap_argocd_root_app_manifest: "{{ lookup('file', role_path ~ '/files/argocd-root-app.yaml') }}"
     bootstrap_argocd_external_secrets_manifest: "{{ lookup('template', role_path ~ '/templates/external-secrets-aws-creds.yaml.j2') }}"
     bootstrap_argocd_external_secrets_openbao_manifest: >-
       {{ lookup('template', role_path ~ '/templates/external-secrets-aws-creds-openbao.yaml.j2') }}
     bootstrap_argocd_seaweedfs_admin_manifest: "{{ lookup('template', role_path ~ '/templates/seaweedfs-s3-admin.yaml.j2') }}"
-    bootstrap_argocd_seaweedfs_observability_manifest: >-
+    bootstrap_argocd_seaweedfs_observability_source_manifest: >-
       {{ lookup('template', role_path ~ '/templates/seaweedfs-s3-observability.yaml.j2') }}
-    bootstrap_argocd_seaweedfs_monitoring_manifest: >-
-      {{ lookup('template', role_path ~ '/templates/seaweedfs-s3-monitoring.yaml.j2') }}
+    bootstrap_argocd_seaweedfs_observability_consumer_manifest: >-
+      {{ lookup('template', role_path ~ '/templates/seaweedfs-s3-observability-consumer.yaml.j2') }}
   no_log: true
   run_once: true
 
@@ -59,26 +44,82 @@
     or 'configured' in (_bootstrap_argocd_apply.stdout | default(''))
   run_once: true
 
-- name: Apply Argo CD install manifest
-  ansible.builtin.command:
-    argv: >-
-      {{
-        ['kubectl', 'apply', '--server-side']
-        + ((bootstrap_argocd_force_conflicts | bool) | ternary(['--force-conflicts'], []))
-        + ['-n', 'argocd', '-f', '-']
-      }}
-  args:
-    stdin: "{{ bootstrap_argocd_install_manifest }}"
+- name: Check whether Argo CD is installed
+  ansible.builtin.command: kubectl get crd applications.argoproj.io
   environment:
     KUBECONFIG: /etc/rancher/k3s/k3s.yaml
-  register: _bootstrap_argocd_apply
-  changed_when: >-
-    'created' in (_bootstrap_argocd_apply.stdout | default(''))
-    or 'configured' in (_bootstrap_argocd_apply.stdout | default(''))
-    or 'serverside-applied' in (_bootstrap_argocd_apply.stdout | default(''))
+  register: _bootstrap_argocd_installed
+  changed_when: false
+  failed_when: false
   run_once: true
 
-- name: Apply Argo CD bootstrap manifests
+- name: Install initial Argo CD release
+  when: _bootstrap_argocd_installed.rc != 0 or bootstrap_argocd_force_conflicts | bool
+  block:
+    - name: Fetch pinned Argo CD install manifest
+      ansible.builtin.set_fact:
+        bootstrap_argocd_install_manifest: >-
+          {{ lookup(
+               'url',
+               'https://raw.githubusercontent.com/argoproj/argo-cd/v3.4.4/manifests/ha/install.yaml',
+               split_lines=False
+             ) }}
+      run_once: true
+
+    - name: Apply Argo CD install manifest
+      ansible.builtin.command:
+        argv: >-
+          {{
+            ['kubectl', 'apply', '--server-side']
+            + ((bootstrap_argocd_force_conflicts | bool) | ternary(['--force-conflicts'], []))
+            + ['-n', 'argocd', '-f', '-']
+          }}
+      args:
+        stdin: "{{ bootstrap_argocd_install_manifest }}"
+      environment:
+        KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+      register: _bootstrap_argocd_apply
+      changed_when: >-
+        'created' in (_bootstrap_argocd_apply.stdout | default(''))
+        or 'configured' in (_bootstrap_argocd_apply.stdout | default(''))
+        or 'serverside-applied' in (_bootstrap_argocd_apply.stdout | default(''))
+      run_once: true
+
+- name: Wait for Argo CD CRDs
+  ansible.builtin.command:
+    argv:
+      - kubectl
+      - wait
+      - --for=condition=Established
+      - "--timeout={{ bootstrap_argocd_wait_timeout }}"
+      - "crd/{{ item }}"
+  environment:
+    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+  changed_when: false
+  loop: "{{ bootstrap_argocd_required_crds }}"
+  run_once: true
+
+- name: Wait for Argo CD pods
+  ansible.builtin.command:
+    argv:
+      - kubectl
+      - wait
+      - --namespace=argocd
+      - --for=condition=Ready
+      - "--timeout={{ bootstrap_argocd_wait_timeout }}"
+      - pod
+      - --selector=app.kubernetes.io/part-of=argocd
+  environment:
+    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+  register: _bootstrap_argocd_pods_ready
+  changed_when: false
+  failed_when: false
+  retries: "{{ bootstrap_argocd_health_retries }}"
+  delay: "{{ bootstrap_argocd_health_delay }}"
+  until: _bootstrap_argocd_pods_ready.rc == 0
+  run_once: true
+
+- name: Apply Argo CD connection and project manifests
   ansible.builtin.command: kubectl apply -f -
   args:
     stdin: "{{ item.manifest }}"
@@ -96,29 +137,20 @@
     - name: Argo CD SSH known hosts
       manifest: "{{ bootstrap_argocd_ssh_known_hosts_manifest }}"
       secret: false
-    - name: Argo CD root application
-      manifest: "{{ bootstrap_argocd_root_app_manifest }}"
+    - name: Argo CD projects
+      manifest: "{{ bootstrap_argocd_projects_manifest }}"
       secret: false
-    - name: External Secrets AWS credentials
-      manifest: "{{ bootstrap_argocd_external_secrets_manifest }}"
-      secret: true
-    - name: SeaweedFS S3 admin secret
-      manifest: "{{ bootstrap_argocd_seaweedfs_admin_manifest }}"
-      secret: true
-    - name: SeaweedFS S3 observability secret
-      manifest: "{{ bootstrap_argocd_seaweedfs_observability_manifest }}"
-      secret: true
-    - name: SeaweedFS S3 monitoring secret
-      manifest: "{{ bootstrap_argocd_seaweedfs_monitoring_manifest }}"
-      secret: true
+    - name: Argo CD projects root
+      manifest: "{{ bootstrap_argocd_projects_root_manifest }}"
+      secret: false
   loop_control:
     label: "{{ item.name }}"
   run_once: true
 
-- name: Apply External Secrets AWS credentials in OpenBao namespace
+- name: Apply bootstrap secrets
   ansible.builtin.command: kubectl apply -f -
   args:
-    stdin: "{{ bootstrap_argocd_external_secrets_openbao_manifest }}"
+    stdin: "{{ item.manifest }}"
   environment:
     KUBECONFIG: /etc/rancher/k3s/k3s.yaml
   register: _bootstrap_argocd_apply
@@ -126,4 +158,103 @@
     'created' in (_bootstrap_argocd_apply.stdout | default(''))
     or 'configured' in (_bootstrap_argocd_apply.stdout | default(''))
   no_log: true
+  loop:
+    - name: External Secrets AWS credentials
+      manifest: "{{ bootstrap_argocd_external_secrets_manifest }}"
+    - name: External Secrets AWS credentials in OpenBao namespace
+      manifest: "{{ bootstrap_argocd_external_secrets_openbao_manifest }}"
+    - name: SeaweedFS S3 admin secret
+      manifest: "{{ bootstrap_argocd_seaweedfs_admin_manifest }}"
+    - name: SeaweedFS S3 observability source secret
+      manifest: "{{ bootstrap_argocd_seaweedfs_observability_source_manifest }}"
+    - name: SeaweedFS S3 observability consumer secret
+      manifest: "{{ bootstrap_argocd_seaweedfs_observability_consumer_manifest }}"
+  loop_control:
+    label: "{{ item.name }}"
+  run_once: true
+
+- name: Apply operator root
+  ansible.builtin.command: kubectl apply -f -
+  args:
+    stdin: "{{ bootstrap_argocd_operators_root_manifest }}"
+  environment:
+    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+  register: _bootstrap_argocd_apply
+  changed_when: >-
+    'created' in (_bootstrap_argocd_apply.stdout | default(''))
+    or 'configured' in (_bootstrap_argocd_apply.stdout | default(''))
+  run_once: true
+
+- name: Wait for operator CRDs
+  ansible.builtin.command:
+    argv:
+      - kubectl
+      - wait
+      - --for=condition=Established
+      - "--timeout={{ bootstrap_argocd_wait_timeout }}"
+      - "crd/{{ item }}"
+  environment:
+    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+  register: _bootstrap_argocd_operator_crd_ready
+  changed_when: false
+  failed_when: false
+  retries: "{{ bootstrap_argocd_health_retries }}"
+  delay: "{{ bootstrap_argocd_health_delay }}"
+  until: _bootstrap_argocd_operator_crd_ready.rc == 0
+  loop: "{{ bootstrap_argocd_operator_crds }}"
+  run_once: true
+
+- name: Apply platform root
+  ansible.builtin.command: kubectl apply -f -
+  args:
+    stdin: "{{ bootstrap_argocd_platform_root_manifest }}"
+  environment:
+    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+  register: _bootstrap_argocd_apply
+  changed_when: >-
+    'created' in (_bootstrap_argocd_apply.stdout | default(''))
+    or 'configured' in (_bootstrap_argocd_apply.stdout | default(''))
+  run_once: true
+
+- name: Wait for platform applications
+  ansible.builtin.command:
+    argv:
+      - kubectl
+      - get
+      - application
+      - --namespace=argocd
+      - "{{ item }}"
+      - --output=jsonpath={.status.sync.status}/{.status.health.status}
+  environment:
+    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+  register: _bootstrap_argocd_application_status
+  changed_when: false
+  retries: "{{ bootstrap_argocd_health_retries }}"
+  delay: "{{ bootstrap_argocd_health_delay }}"
+  until: _bootstrap_argocd_application_status.stdout == 'Synced/Healthy'
+  loop: "{{ bootstrap_argocd_platform_applications }}"
+  run_once: true
+
+- name: Apply apps root
+  ansible.builtin.command: kubectl apply -f -
+  args:
+    stdin: "{{ bootstrap_argocd_apps_root_manifest }}"
+  environment:
+    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+  register: _bootstrap_argocd_apply
+  changed_when: >-
+    'created' in (_bootstrap_argocd_apply.stdout | default(''))
+    or 'configured' in (_bootstrap_argocd_apply.stdout | default(''))
+  run_once: true
+
+- name: Report Argo CD application health
+  ansible.builtin.command:
+    argv:
+      - kubectl
+      - get
+      - applications
+      - --namespace=argocd
+  environment:
+    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+  changed_when: false
   run_once: true

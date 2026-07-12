@@ -8,4 +8,4 @@ metadata:
     app.kubernetes.io/part-of: argocd
 data:
   ssh_known_hosts: |
-    {{ bootstrap_argocd_github_known_hosts.stdout | indent(4) }}
+    {{ bootstrap_argocd_github_known_hosts | indent(4) }}
