@@ -1,0 +1,129 @@
+---
+- name: Fetch Argo CD SSM values
+  ansible.builtin.set_fact:
+    bootstrap_argocd_git_deploy_private_key: "{{ lookup('amazon.aws.aws_ssm', ssm_git_deploy_private_key_path) }}"
+    bootstrap_argocd_eso_access_key_id: "{{ lookup('amazon.aws.aws_ssm', ssm_eso_access_key_id_path) }}"
+    bootstrap_argocd_eso_secret_access_key: "{{ lookup('amazon.aws.aws_ssm', ssm_eso_secret_access_key_path) }}"
+    bootstrap_argocd_seaweedfs_admin_access_key: "{{ lookup('amazon.aws.aws_ssm', ssm_seaweedfs_s3_admin_access_key_path) }}"
+    bootstrap_argocd_seaweedfs_admin_secret_key: "{{ lookup('amazon.aws.aws_ssm', ssm_seaweedfs_s3_admin_secret_key_path) }}"
+    bootstrap_argocd_seaweedfs_observability_access_key: "{{ lookup('amazon.aws.aws_ssm', ssm_seaweedfs_s3_obs_access_key_path) }}"
+    bootstrap_argocd_seaweedfs_observability_secret_key: "{{ lookup('amazon.aws.aws_ssm', ssm_seaweedfs_s3_obs_secret_key_path) }}"
+  no_log: true
+  run_once: true
+
+- name: Fetch GitHub SSH known_hosts
+  ansible.builtin.command:
+    cmd: ssh-keyscan -t ed25519 github.com
+  register: bootstrap_argocd_github_known_hosts
+  changed_when: false
+  delegate_to: localhost
+  become: false
+  run_once: true
+
+- name: Render Argo CD install manifest in memory
+  ansible.builtin.set_fact:
+    bootstrap_argocd_install_manifest: >-
+      {{ lookup(
+           'url',
+           'https://raw.githubusercontent.com/argoproj/argo-cd/v3.4.4/manifests/ha/install.yaml',
+           split_lines=False
+         ) }}
+  run_once: true
+
+- name: Render Argo CD bootstrap manifests in memory
+  ansible.builtin.set_fact:
+    bootstrap_argocd_namespaces_manifest: "{{ lookup('file', role_path ~ '/files/namespaces.yaml') }}"
+    bootstrap_argocd_repo_secret_manifest: "{{ lookup('template', role_path ~ '/templates/argocd-repo-secret.yaml.j2') }}"
+    bootstrap_argocd_ssh_known_hosts_manifest: "{{ lookup('template', role_path ~ '/templates/argocd-ssh-known-hosts-cm.yaml.j2') }}"
+    bootstrap_argocd_root_app_manifest: "{{ lookup('file', role_path ~ '/files/argocd-root-app.yaml') }}"
+    bootstrap_argocd_external_secrets_manifest: "{{ lookup('template', role_path ~ '/templates/external-secrets-aws-creds.yaml.j2') }}"
+    bootstrap_argocd_external_secrets_openbao_manifest: >-
+      {{ lookup('template', role_path ~ '/templates/external-secrets-aws-creds-openbao.yaml.j2') }}
+    bootstrap_argocd_seaweedfs_admin_manifest: "{{ lookup('template', role_path ~ '/templates/seaweedfs-s3-admin.yaml.j2') }}"
+    bootstrap_argocd_seaweedfs_observability_manifest: >-
+      {{ lookup('template', role_path ~ '/templates/seaweedfs-s3-observability.yaml.j2') }}
+    bootstrap_argocd_seaweedfs_monitoring_manifest: >-
+      {{ lookup('template', role_path ~ '/templates/seaweedfs-s3-monitoring.yaml.j2') }}
+  no_log: true
+  run_once: true
+
+- name: Apply namespace manifest
+  ansible.builtin.command: kubectl apply -f -
+  args:
+    stdin: "{{ bootstrap_argocd_namespaces_manifest }}"
+  environment:
+    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+  register: _bootstrap_argocd_apply
+  changed_when: >-
+    'created' in (_bootstrap_argocd_apply.stdout | default(''))
+    or 'configured' in (_bootstrap_argocd_apply.stdout | default(''))
+  run_once: true
+
+- name: Apply Argo CD install manifest
+  ansible.builtin.command:
+    argv: >-
+      {{
+        ['kubectl', 'apply', '--server-side']
+        + ((bootstrap_argocd_force_conflicts | bool) | ternary(['--force-conflicts'], []))
+        + ['-n', 'argocd', '-f', '-']
+      }}
+  args:
+    stdin: "{{ bootstrap_argocd_install_manifest }}"
+  environment:
+    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+  register: _bootstrap_argocd_apply
+  changed_when: >-
+    'created' in (_bootstrap_argocd_apply.stdout | default(''))
+    or 'configured' in (_bootstrap_argocd_apply.stdout | default(''))
+    or 'serverside-applied' in (_bootstrap_argocd_apply.stdout | default(''))
+  run_once: true
+
+- name: Apply Argo CD bootstrap manifests
+  ansible.builtin.command: kubectl apply -f -
+  args:
+    stdin: "{{ item.manifest }}"
+  environment:
+    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+  register: _bootstrap_argocd_apply
+  changed_when: >-
+    'created' in (_bootstrap_argocd_apply.stdout | default(''))
+    or 'configured' in (_bootstrap_argocd_apply.stdout | default(''))
+  no_log: "{{ item.secret }}"
+  loop:
+    - name: Argo CD repository secret
+      manifest: "{{ bootstrap_argocd_repo_secret_manifest }}"
+      secret: true
+    - name: Argo CD SSH known hosts
+      manifest: "{{ bootstrap_argocd_ssh_known_hosts_manifest }}"
+      secret: false
+    - name: Argo CD root application
+      manifest: "{{ bootstrap_argocd_root_app_manifest }}"
+      secret: false
+    - name: External Secrets AWS credentials
+      manifest: "{{ bootstrap_argocd_external_secrets_manifest }}"
+      secret: true
+    - name: SeaweedFS S3 admin secret
+      manifest: "{{ bootstrap_argocd_seaweedfs_admin_manifest }}"
+      secret: true
+    - name: SeaweedFS S3 observability secret
+      manifest: "{{ bootstrap_argocd_seaweedfs_observability_manifest }}"
+      secret: true
+    - name: SeaweedFS S3 monitoring secret
+      manifest: "{{ bootstrap_argocd_seaweedfs_monitoring_manifest }}"
+      secret: true
+  loop_control:
+    label: "{{ item.name }}"
+  run_once: true
+
+- name: Apply External Secrets AWS credentials in OpenBao namespace
+  ansible.builtin.command: kubectl apply -f -
+  args:
+    stdin: "{{ bootstrap_argocd_external_secrets_openbao_manifest }}"
+  environment:
+    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+  register: _bootstrap_argocd_apply
+  changed_when: >-
+    'created' in (_bootstrap_argocd_apply.stdout | default(''))
+    or 'configured' in (_bootstrap_argocd_apply.stdout | default(''))
+  no_log: true
+  run_once: true

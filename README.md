@@ -8,7 +8,7 @@ Provisions LZ workload VMs on Proxmox and bootstraps the k3s cluster and Argo CD
 
 ## Structure
 - `src/tf/`: Provisions Proxmox VMs and emits Terraform-backed Ansible inventory data.
-- `src/ansible/`: Installs k3s (`bootstrap.yml`) and applies Argo CD/bootstrap manifests (`apply.yml`).
+- `src/ansible/`: Rebuilds the cluster (`cluster-bootstrap.yml`) and supports rerunning Argo CD bootstrap (`argocd-bootstrap.yml`).
 - `.github/workflows/`: Terraform plan/apply and Ansible lint/manual execution workflows.
 
 ## Run
@@ -18,13 +18,13 @@ make tf-init
 make tf-plan
 make tf-apply
 make ansible-install
-make ansible PLAYBOOK=bootstrap.yml
-make ansible PLAYBOOK=apply.yml
+make ansible PLAYBOOK=cluster-bootstrap.yml
+make ansible PLAYBOOK=argocd-bootstrap.yml
 ```
 
 ## Operational order
 - Apply Terraform first to create VMs and write required SSM parameter paths.
-- Run `bootstrap.yml` before `apply.yml` so k3s is present before Argo CD manifests are applied.
+- Run `cluster-bootstrap.yml` for a complete rebuild. Run `argocd-bootstrap.yml` to reconcile only the Argo CD bootstrap resources.
 - Add `git_deploy_public_key` output as a read-only deploy key in [`glitchedmob/infra-k8s-apps`](https://github.com/glitchedmob/infra-k8s-apps).
 - Update the SSM parameters at `argocd_github_oauth_client_id_ssm_path` and `argocd_github_oauth_client_secret_ssm_path` with valid GitHub OAuth App credentials for Argo CD SSO.
 

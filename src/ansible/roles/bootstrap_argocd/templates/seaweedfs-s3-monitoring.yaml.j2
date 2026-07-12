@@ -7,5 +7,5 @@ metadata:
     app.kubernetes.io/part-of: seaweedfs
 type: Opaque
 stringData:
-  AWS_ACCESS_KEY_ID: "{{ seaweedfs_s3_observability_access_key }}"
-  AWS_SECRET_ACCESS_KEY: "{{ seaweedfs_s3_observability_secret_key }}"
+  AWS_ACCESS_KEY_ID: "{{ bootstrap_argocd_seaweedfs_observability_access_key }}"
+  AWS_SECRET_ACCESS_KEY: "{{ bootstrap_argocd_seaweedfs_observability_secret_key }}"

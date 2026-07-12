@@ -9,9 +9,9 @@ on:
         type: choice
         options:
           - base-os-updates.yml
-          - bootstrap.yml
+          - cluster-bootstrap.yml
           - tailscale-headscale.yml
-          - apply.yml
+          - argocd-bootstrap.yml
       initialize-terraform:
         description: Initialize Terraform first
         type: boolean
