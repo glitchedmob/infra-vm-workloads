@@ -1,8 +1,9 @@
 locals {
-  proxmox_pool_id   = "lz"
-  lz_cidr           = "10.20.0.0/22"
-  vm_network_bridge = "lz"
-  vm_user           = "admin"
+  proxmox_pool_id     = "lz"
+  lz_cidr             = "10.20.0.0/22"
+  vm_network_bridge   = "lz"
+  vm_user             = "admin"
+  data_disk_interface = "scsi1"
 
   ssm_key_prefix = "/vm-workloads/lz/infra-vm-workloads"
 

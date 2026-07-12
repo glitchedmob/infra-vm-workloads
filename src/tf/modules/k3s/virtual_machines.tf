@@ -11,7 +11,7 @@ module "k3s_data_owner" {
   datastore_id = "vmdata"
   disk_size_gb = 200
   disk_serial  = "${each.key}-data"
-  protect = false
+  protect      = false
 }
 
 module "k3s_vm" {
@@ -31,7 +31,7 @@ module "k3s_vm" {
   memory_mb    = each.value.memory_mb
   disk_size_gb = 80
   data_disks = {
-    scsi1 = module.k3s_data_owner[each.key].disk
+    (local.data_disk_interface) = module.k3s_data_owner[each.key].disk
   }
   network_bridge = local.vm_network_bridge
   network_cidr   = local.lz_cidr
