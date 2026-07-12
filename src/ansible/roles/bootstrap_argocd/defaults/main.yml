@@ -23,6 +23,8 @@ bootstrap_argocd_base_operator_crds:
   - clusters.postgresql.cnpg.io
   - prometheuses.monitoring.coreos.com
   - servicemonitors.monitoring.coreos.com
+  - prebackuppods.k8up.io
+  - schedules.k8up.io
   - volumes.longhorn.io
 bootstrap_argocd_base_operator_workloads:
   - namespace: cert-manager
@@ -33,6 +35,8 @@ bootstrap_argocd_base_operator_workloads:
     selector: app.kubernetes.io/instance=external-secrets
   - namespace: longhorn-system
     selector: app.kubernetes.io/instance=longhorn
+  - namespace: k8up
+    selector: app.kubernetes.io/name=k8up
 bootstrap_argocd_dependent_operator_crds:
   - bundles.trust.cert-manager.io
   - instrumentations.opentelemetry.io
