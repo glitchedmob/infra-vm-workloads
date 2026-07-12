@@ -15,7 +15,8 @@ locals {
       node_name    = "x86-node-01"
       ipv4_address = "10.20.0.10"
       role         = "server"
-      memory_mb    = 16 * 1024
+      memory_mb    = 30 * 1024
+      cpu_cores    = 8
       cpu_type     = "x86-64-v3"
     }
     lz-k3s-02 = {
@@ -23,13 +24,15 @@ locals {
       ipv4_address = "10.20.0.11"
       role         = "server"
       memory_mb    = 14 * 1024
+      cpu_cores    = 6
       cpu_type     = "x86-64-v3"
     }
     lz-k3s-03 = {
       node_name    = "x86-node-01"
       ipv4_address = "10.20.0.12"
       role         = "server"
-      memory_mb    = 16 * 1024
+      memory_mb    = 30 * 1024
+      cpu_cores    = 8
       cpu_type     = "x86-64-v2-AES"
     }
   }

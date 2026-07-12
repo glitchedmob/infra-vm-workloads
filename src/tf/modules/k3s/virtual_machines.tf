@@ -9,7 +9,7 @@ module "k3s_data_owner" {
   node_name    = each.value.node_name
   pool_id      = local.proxmox_pool_id
   datastore_id = "vmdata"
-  disk_size_gb = 200
+  disk_size_gb = 300
   disk_serial  = "${each.key}-data"
   protect      = false
 }
@@ -26,7 +26,7 @@ module "k3s_vm" {
   pool_id     = local.proxmox_pool_id
   os_id       = "debian13"
 
-  cpu_cores    = 4
+  cpu_cores    = each.value.cpu_cores
   cpu_type     = each.value.cpu_type
   memory_mb    = each.value.memory_mb
   disk_size_gb = 80
