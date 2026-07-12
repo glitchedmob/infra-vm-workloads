@@ -1,13 +1,13 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: operators
+  name: dependent-operators
   namespace: argocd
 spec:
   project: bootstrap
   source:
     repoURL: ssh://git@github.com/glitchedmob/infra-k8s-apps.git
-    path: src/k8s/bootstrap/operators
+    path: src/k8s/bootstrap/operators/dependent
     targetRevision: main
   destination:
     server: https://kubernetes.default.svc

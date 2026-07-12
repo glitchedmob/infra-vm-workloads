@@ -25,7 +25,10 @@
     bootstrap_argocd_namespaces_manifest: "{{ lookup('file', role_path ~ '/files/namespaces.yaml') }}"
     bootstrap_argocd_projects_manifest: "{{ lookup('file', role_path ~ '/files/argocd-projects.yaml') }}"
     bootstrap_argocd_projects_root_manifest: "{{ lookup('file', role_path ~ '/files/argocd-projects-root.yaml') }}"
-    bootstrap_argocd_operators_root_manifest: "{{ lookup('file', role_path ~ '/files/argocd-operators-root.yaml') }}"
+    bootstrap_argocd_base_operators_root_manifest: >-
+      {{ lookup('file', role_path ~ '/files/argocd-base-operators-root.yaml') }}
+    bootstrap_argocd_dependent_operators_root_manifest: >-
+      {{ lookup('file', role_path ~ '/files/argocd-dependent-operators-root.yaml') }}
     bootstrap_argocd_platform_root_manifest: "{{ lookup('file', role_path ~ '/files/argocd-platform-root.yaml') }}"
     bootstrap_argocd_apps_root_manifest: "{{ lookup('file', role_path ~ '/files/argocd-apps-root.yaml') }}"
     bootstrap_argocd_repo_secret_manifest: "{{ lookup('template', role_path ~ '/templates/argocd-repo-secret.yaml.j2') }}"
@@ -182,10 +185,10 @@
     label: "{{ item.name }}"
   run_once: true
 
-- name: Apply operator root
+- name: Apply base operator root
   ansible.builtin.command: kubectl apply -f -
   args:
-    stdin: "{{ bootstrap_argocd_operators_root_manifest }}"
+    stdin: "{{ bootstrap_argocd_base_operators_root_manifest }}"
   environment:
     KUBECONFIG: /etc/rancher/k3s/k3s.yaml
   register: _bootstrap_argocd_apply
@@ -194,42 +197,100 @@
     or 'configured' in (_bootstrap_argocd_apply.stdout | default(''))
   run_once: true
 
-- name: Wait for operator CRDs
+- name: Wait for base operator CRDs
   ansible.builtin.command:
     argv:
       - kubectl
       - wait
       - --for=condition=Established
-      - "--timeout={{ bootstrap_argocd_wait_timeout }}"
+      - "--timeout={{ bootstrap_argocd_poll_timeout }}"
       - "crd/{{ item }}"
   environment:
     KUBECONFIG: /etc/rancher/k3s/k3s.yaml
-  register: _bootstrap_argocd_operator_crd_ready
+  register: _bootstrap_argocd_base_operator_crd_ready
   changed_when: false
   failed_when: false
   retries: "{{ bootstrap_argocd_health_retries }}"
   delay: "{{ bootstrap_argocd_health_delay }}"
-  until: _bootstrap_argocd_operator_crd_ready.rc == 0
-  loop: "{{ bootstrap_argocd_operator_crds }}"
+  until: _bootstrap_argocd_base_operator_crd_ready.rc == 0
+  loop: "{{ bootstrap_argocd_base_operator_crds }}"
   run_once: true
 
-- name: Wait for operator applications
+- name: Wait for base operator workloads
   ansible.builtin.command:
     argv:
       - kubectl
-      - get
-      - application
-      - --namespace=argocd
-      - "{{ item }}"
-      - --output=jsonpath={.status.sync.status}/{.status.health.status}
+      - wait
+      - "--namespace={{ item.namespace }}"
+      - --for=condition=Ready
+      - "--timeout={{ bootstrap_argocd_poll_timeout }}"
+      - pod
+      - "--selector={{ item.selector }}"
   environment:
     KUBECONFIG: /etc/rancher/k3s/k3s.yaml
-  register: _bootstrap_argocd_operator_status
+  register: _bootstrap_argocd_base_operator_ready
   changed_when: false
+  failed_when: false
   retries: "{{ bootstrap_argocd_health_retries }}"
   delay: "{{ bootstrap_argocd_health_delay }}"
-  until: _bootstrap_argocd_operator_status.stdout == 'Synced/Healthy'
-  loop: "{{ bootstrap_argocd_operator_applications }}"
+  until: _bootstrap_argocd_base_operator_ready.rc == 0
+  loop: "{{ bootstrap_argocd_base_operator_workloads }}"
+  loop_control:
+    label: "{{ item.namespace }}: {{ item.selector }}"
+  run_once: true
+
+- name: Apply dependent operator root
+  ansible.builtin.command: kubectl apply -f -
+  args:
+    stdin: "{{ bootstrap_argocd_dependent_operators_root_manifest }}"
+  environment:
+    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+  register: _bootstrap_argocd_apply
+  changed_when: >-
+    'created' in (_bootstrap_argocd_apply.stdout | default(''))
+    or 'configured' in (_bootstrap_argocd_apply.stdout | default(''))
+  run_once: true
+
+- name: Wait for dependent operator CRDs
+  ansible.builtin.command:
+    argv:
+      - kubectl
+      - wait
+      - --for=condition=Established
+      - "--timeout={{ bootstrap_argocd_poll_timeout }}"
+      - "crd/{{ item }}"
+  environment:
+    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+  register: _bootstrap_argocd_dependent_operator_crd_ready
+  changed_when: false
+  failed_when: false
+  retries: "{{ bootstrap_argocd_health_retries }}"
+  delay: "{{ bootstrap_argocd_health_delay }}"
+  until: _bootstrap_argocd_dependent_operator_crd_ready.rc == 0
+  loop: "{{ bootstrap_argocd_dependent_operator_crds }}"
+  run_once: true
+
+- name: Wait for dependent operator workloads
+  ansible.builtin.command:
+    argv:
+      - kubectl
+      - wait
+      - "--namespace={{ item.namespace }}"
+      - --for=condition=Ready
+      - "--timeout={{ bootstrap_argocd_poll_timeout }}"
+      - pod
+      - "--selector={{ item.selector }}"
+  environment:
+    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+  register: _bootstrap_argocd_dependent_operator_ready
+  changed_when: false
+  failed_when: false
+  retries: "{{ bootstrap_argocd_health_retries }}"
+  delay: "{{ bootstrap_argocd_health_delay }}"
+  until: _bootstrap_argocd_dependent_operator_ready.rc == 0
+  loop: "{{ bootstrap_argocd_dependent_operator_workloads }}"
+  loop_control:
+    label: "{{ item.namespace }}: {{ item.selector }}"
   run_once: true
 
 - name: Apply platform root
@@ -261,6 +322,27 @@
   delay: "{{ bootstrap_argocd_health_delay }}"
   until: _bootstrap_argocd_application_status.stdout == 'Synced/Healthy'
   loop: "{{ bootstrap_argocd_platform_applications }}"
+  run_once: true
+
+- name: Wait for foundational platform configuration
+  ansible.builtin.command:
+    argv: >-
+      {{
+        ['kubectl', 'wait', item.resource, '--for=condition=' ~ item.condition,
+         '--timeout=' ~ bootstrap_argocd_poll_timeout]
+        + ((item.namespace is defined) | ternary(['--namespace=' ~ (item.namespace | default(''))], []))
+      }}
+  environment:
+    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+  register: _bootstrap_argocd_configuration_ready
+  changed_when: false
+  failed_when: false
+  retries: "{{ bootstrap_argocd_health_retries }}"
+  delay: "{{ bootstrap_argocd_health_delay }}"
+  until: _bootstrap_argocd_configuration_ready.rc == 0
+  loop: "{{ bootstrap_argocd_configuration_resources }}"
+  loop_control:
+    label: "{{ item.resource }}"
   run_once: true
 
 - name: Apply apps root
