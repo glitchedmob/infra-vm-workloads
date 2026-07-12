@@ -18,6 +18,15 @@ bootstrap_argocd_operator_crds:
   - bundles.trust.cert-manager.io
   - opentelemetrycollectors.opentelemetry.io
   - volumes.longhorn.io
+bootstrap_argocd_operator_applications:
+  - cert-manager
+  - cnpg-operator
+  - external-secrets
+  - longhorn
+  - otel-operator
+  - reloader
+  - trust-manager
+  - valkey-operator
 bootstrap_argocd_platform_applications:
   - argocd-install
   - bootstrap-config
