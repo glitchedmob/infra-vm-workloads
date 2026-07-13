@@ -5,5 +5,3 @@ service_cidr: 10.55.0.0/16
 tailscale_login_server: "https://headscale.levizitting.com"
 tailscale_local_subnets:
   - 10.20.0.0/16
-github_oauth_client_id: "Ov23li4rqAsr8KhLdKTf"
-grafana_github_oauth_client_id: "Ov23lirshCUYMwwQgJ8R"

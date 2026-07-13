@@ -24,20 +24,6 @@ resource "aws_ssm_parameter" "openbao_unseal_key" {
   value_wo_version = 1
 }
 
-resource "aws_ssm_parameter" "argocd_github_oauth_client_secret" {
-  name             = "${local.ssm_key_prefix}/argocd-github-oauth-client-secret"
-  type             = "SecureString"
-  value_wo         = "CHANGEME"
-  value_wo_version = 1
-}
-
-resource "aws_ssm_parameter" "grafana_github_oauth_client_secret" {
-  name             = "${local.ssm_key_prefix}/grafana-github-oauth-client-secret"
-  type             = "SecureString"
-  value_wo         = "CHANGEME"
-  value_wo_version = 1
-}
-
 resource "aws_ssm_parameter" "dex_github_oauth_client_secret" {
   name             = "${local.ssm_key_prefix}/dex-github-oauth-client-secret"
   type             = "SecureString"

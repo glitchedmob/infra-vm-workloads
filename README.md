@@ -26,7 +26,7 @@ make ansible PLAYBOOK=argocd-bootstrap.yml
 - Apply Terraform first to create VMs and write required SSM parameter paths.
 - Run `cluster-bootstrap.yml` for a complete rebuild. Run `argocd-bootstrap.yml` to reconcile only the Argo CD bootstrap resources.
 - Add `git_deploy_public_key` output as a read-only deploy key in [`glitchedmob/infra-k8s-apps`](https://github.com/glitchedmob/infra-k8s-apps).
-- Update the SSM parameters at `argocd_github_oauth_client_id_ssm_path` and `argocd_github_oauth_client_secret_ssm_path` with valid GitHub OAuth App credentials for Argo CD SSO.
+- Argo CD and Grafana authenticate through Dex; only the Dex GitHub OAuth App secret needs manual population in SSM.
 
 ## Operating constraints
 - This repo mixes infrastructure provisioning and cluster bootstrap; run Terraform and Ansible steps intentionally and in order.
