@@ -1,7 +1,7 @@
 locals {
   backup_bucket_name = "levizitting-on-prem-k3s-backups"
   backup_ssm_prefix  = "/vm-workloads/lz/infra-vm-workloads/backups"
-  backup_apps        = toset(["authentik", "openbao"])
+  backup_apps        = toset(["openbao"])
 }
 
 resource "b2_bucket" "backups" {
