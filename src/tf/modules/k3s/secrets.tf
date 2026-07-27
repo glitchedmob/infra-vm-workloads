@@ -74,39 +74,3 @@ resource "aws_ssm_parameter" "oauth2_proxy_cookie_secret" {
   value_wo         = ephemeral.random_password.oauth2_proxy_cookie.result
   value_wo_version = 1
 }
-
-ephemeral "random_password" "seaweedfs_admin_secret_key" {
-  length  = 40
-  special = false
-}
-
-ephemeral "random_password" "seaweedfs_observability_secret_key" {
-  length  = 40
-  special = false
-}
-
-resource "aws_ssm_parameter" "seaweedfs_s3_admin_access_key" {
-  name  = "${local.ssm_key_prefix}/seaweedfs-s3-admin-access-key"
-  type  = "SecureString"
-  value = "seaweedfs-admin"
-}
-
-resource "aws_ssm_parameter" "seaweedfs_s3_admin_secret_key" {
-  name             = "${local.ssm_key_prefix}/seaweedfs-s3-admin-secret-key"
-  type             = "SecureString"
-  value_wo         = ephemeral.random_password.seaweedfs_admin_secret_key.result
-  value_wo_version = 1
-}
-
-resource "aws_ssm_parameter" "seaweedfs_s3_observability_access_key" {
-  name  = "${local.ssm_key_prefix}/seaweedfs-s3-observability-access-key"
-  type  = "SecureString"
-  value = "seaweedfs-observability"
-}
-
-resource "aws_ssm_parameter" "seaweedfs_s3_observability_secret_key" {
-  name             = "${local.ssm_key_prefix}/seaweedfs-s3-observability-secret-key"
-  type             = "SecureString"
-  value_wo         = ephemeral.random_password.seaweedfs_observability_secret_key.result
-  value_wo_version = 1
-}
