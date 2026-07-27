@@ -1,7 +1,10 @@
 locals {
   backup_bucket_name = "levizitting-on-prem-k3s-backups"
   backup_ssm_prefix  = "/vm-workloads/lz/infra-vm-workloads/backups"
-  backup_apps        = toset(["openbao"])
+  backup_app_password_versions = {
+    authentik = 1
+    openbao   = 1
+  }
 }
 
 resource "b2_bucket" "backups" {
@@ -34,19 +37,19 @@ resource "aws_ssm_parameter" "b2_account_key" {
 }
 
 ephemeral "random_password" "restic_password" {
-  for_each = local.backup_apps
+  for_each = local.backup_app_password_versions
 
   length  = 40
   special = false
 }
 
 resource "aws_ssm_parameter" "restic_password" {
-  for_each = local.backup_apps
+  for_each = local.backup_app_password_versions
 
   name             = "${local.backup_ssm_prefix}/${each.key}/restic-password"
   type             = "SecureString"
   value_wo         = ephemeral.random_password.restic_password[each.key].result
-  value_wo_version = 1
+  value_wo_version = each.value
 
   lifecycle {
     prevent_destroy = true
