@@ -2,8 +2,7 @@ locals {
   backup_bucket_name = "levizitting-on-prem-k3s-backups"
   backup_ssm_prefix  = "/vm-workloads/lz/infra-vm-workloads/backups"
   backup_app_password_versions = {
-    authentik = 1
-    openbao   = 1
+    openbao = 1
   }
 }
 
