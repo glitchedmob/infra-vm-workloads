@@ -3,6 +3,7 @@ locals {
   backup_ssm_prefix  = "/vm-workloads/lz/infra-vm-workloads/backups"
   backup_app_password_versions = {
     openbao = 1
+    zitadel = 1
   }
 }
 
