@@ -3,7 +3,7 @@
 
 provider "registry.opentofu.org/ansible/ansible" {
   version     = "1.5.0"
-  constraints = "~> 1.4"
+  constraints = "~> 1.5"
   hashes = [
     "h1:8RScKkD5ZCSpPJ8zTwgz56WDTV9wUnhKBrHfUrIA+SA=",
     "h1:8p/LQkmVBKmD/ikiSonFsfvZlBFjhUuAxVwjIcSAaUA=",
@@ -36,19 +36,19 @@ provider "registry.opentofu.org/ansible/ansible" {
 }
 
 provider "registry.opentofu.org/backblaze/b2" {
-  version     = "0.13.0"
-  constraints = "~> 0.12"
+  version     = "0.13.2"
+  constraints = "~> 0.13"
   hashes = [
-    "h1:9aynKYr2dD4Pw8tH/onopvO8g0+tfWa5YaCypm/Otzw=",
-    "h1:IKPv+usGf0FSikzWROxmIaRWNNWUcW2twQ55lKdeQGs=",
-    "h1:UAp6AlVVPMCmc7RjsCXPvnZGH0J2q3IUJ9BXcXB9Hfg=",
-    "h1:kvgxjm0bdcyAYrrLbzIs1Dz2IA4dbYC3CM5mXn2+A2g=",
-    "h1:w9AmI7jZlIL7LvZ2wAwc6E6ouqNtFRDpdEPmA1riEbc=",
-    "zh:06ac57cbd50026f69156f91d3979928e49363092f93cb3c3b8aa21f2ea632843",
-    "zh:31f668e12cd0375301a61455fde3c2126b0c4fb41dfc03c9645c7901a0b30b37",
-    "zh:87a869ffa2d02c474710ceaa85475c89617bb922ea46bbb088b46eabb131201e",
-    "zh:b16f3299cebd6f8bc3ca6f7a40e8f5078a437efb37e9fac69d3dce4500d8a342",
-    "zh:f7c7ca77f15b7832424bfe37e03aa4001f239e710505f6e4e987c525b41efd8b",
+    "h1:CvSGLZjfK6nBmUwWAttzVd/Yl43efMBP6k8MTYcfKSo=",
+    "h1:JrsBRoUeXwYXU0MUIyYfzatFzTG46nxn07gid7lMsK8=",
+    "h1:SLAIwqv4rdVsM2PaAZbUzAU0GLv+4VqYnjE8/MadR9w=",
+    "h1:ZLs3VUlLAnQGQFZPMKZiIcsuNCcyS4hnQqjuH31pqvY=",
+    "h1:dD31XsGhaqYadSqGeVjTrfB2La8SZmzrVjV1d7CTZEY=",
+    "zh:18200e500f82b6a017f65e59675be44c95c37fe75f95366a5e1f2cd5bed83d43",
+    "zh:702b2f81c76d36113be91aba7f99703e5993ccdb655b81b707379655f4aee7c9",
+    "zh:a77ca7f9b7e4f2559be2153f4c3d50916e460d4e940842f7a261b05e82bed79f",
+    "zh:bc94e85036235ab61d8743a1e5012be2da4bbb75b34f00ee48648bae67ce1386",
+    "zh:ce235c956b02f10748cd764cbf52caecc0e229fe8393d99a8c93c0a0317d0d1b",
   ]
 }
 
@@ -121,44 +121,45 @@ provider "registry.opentofu.org/glitchedmob/writeonly" {
 }
 
 provider "registry.opentofu.org/hashicorp/aws" {
-  version     = "6.53.0"
-  constraints = "~> 6.53"
+  version     = "6.58.0"
+  constraints = "~> 6.58"
   hashes = [
-    "h1:5P+SDwfY9xc3oNyFCi7T9ec2WKs0Kw6h+gBbLGp7xYA=",
-    "h1:7eaGyQaHqU0h48zwJg786kxdR1ox56WBl/Nfda/uU6U=",
-    "h1:MeKnCIwuNwdk10RB7T4y46fAaavFBQSoh0DP4Jd+cMQ=",
-    "h1:QIZhIYRX+FjNK1MM2j7d+SS+2sRuhGsStxGYdeuNuoI=",
-    "h1:RinUymyjUeWaHwS5hg6AkFgMmpn0+ZIMf80rx5BlgoY=",
-    "h1:WsPCHWzaWNYyqX4JvfDzmab/P+0NxHiqvHp/ClUOWqs=",
-    "h1:YXBlULX+maf70HlHnqqRCRV2yG/oLLzb/TbygeLONrM=",
-    "h1:cOEyj479FZE7cTxnDGM4vj/u0n0ILVRxyPl5oIAzfiY=",
-    "h1:dSdQS0Ue9Ob26BCt2Fv740LcoRzGmpu4W/L2I5K9YzE=",
-    "h1:k4vYcdMr0yU8bknkp6E4dfD4RjXzFFcJ/6G5oS6TiSY=",
-    "h1:n9aGPY4fOgjbvXX3TYrP4Amw2EiEfSqaz55lSuFS2Co=",
-    "h1:npiJXumWsg0dkJBn9yPVm+eqi+tXdie3ttD8P298+6Y=",
-    "h1:tTOBbDfzy8a4YVqIq/uoghTJL5kw32leOR2aQUloALI=",
-    "h1:uivUtKqX7AHRnBWkVrxlfWlauv/s0C4nMxQ9JeohHHs=",
-    "h1:xFtJcieVZfsv5xDW6F0ZgavumYLI2o7Fk1qZQHmQmFo=",
-    "zh:03fb02e200242a11252912d04be8da8eb80a72c06bfc9f4b73a8e97ad2bea21c",
-    "zh:19411bbcb38cf2644d0a426b52b8f28a29464a1749f5db713b80b443e706d8b8",
-    "zh:3ad53edba021e4a02415e079de846d2c385964e540b401801c7fd309f88b6b69",
-    "zh:4661891cb13b70df47f4a5913336c6b4ee81e0a72e22abba5561c0eb9e535f87",
-    "zh:4ea6ca42462e0377ce4ca50faef4b28a7059142eb88199fa966280b9307b525f",
-    "zh:6ce7d8598c2664cd3fa765ecebb564897910c7f32fb1139e8213b7d0fc5b86fc",
-    "zh:6e651398e2fe03b60a1cad41f45060838d47e26463317b34f644943e6e9ce760",
-    "zh:745d1c6b9c49cec684003fddc8aee4a99b8595cb9a7f1898dac5ee26d369b147",
-    "zh:7f85f9f0f523c2d220d93b892bae825ef4bca4a187c26a1207d40e3eb7a3693b",
-    "zh:a9a6c4f35d75b4f7511742d5ba3f02d1ad4dd720c5208c98fa85b47e5e37372b",
-    "zh:b306267308de2d1ef094702002417baf17359a2f8b09f3e1c9d557fa153506be",
-    "zh:d1ba9d27b28bb6b356b141b7d5015a37a78d92fb0ce715e13df6e8d98533ef46",
-    "zh:e78be305a8e0550a09ced9eaa6f5f98060c53079cb1d36cd904eb7afccf09138",
-    "zh:e9357d850c476ac35f3358ff102df7bce23bc303f87a77e0ecff0a6c308039bc",
-    "zh:f0918349619590f9f4213a86b74ecf8fa55f44971991c7ff2b460a76a6ae20c6",
+    "h1:322kzfBZLH+nR2ECIl6NxJ6/WwIpHDYPekek9PryvmM=",
+    "h1:3VChA/3dIR5ktUAzikh8FzYiJak7lbVdzeaJs1nXQzU=",
+    "h1:DYbe2TO0Yt6FDW0+Msxx/UfUJrdGNwyT3m7jdZmi2GA=",
+    "h1:H6eR02ejuaIyGp2Le1h3zyZX/5Q3zsxlWI7JtBUQLRE=",
+    "h1:HgSKNaQnS/M2DRtGTuMYLMQLAbXyPSgzaK+c/LhZFAo=",
+    "h1:IlAaqShDFiaBdU8Bqg77e3EwEZR/Rz2Qta3mQOkS8AA=",
+    "h1:OzSA5aLuwD6QwEq77CS1SLCQEM1qRACom7/raSECF28=",
+    "h1:QMxEmYH3kihgwovfNdLb+i7hQU9MVKZV8dzCy8DvRQ0=",
+    "h1:VO5wJ9plwmdt3ZDUU8VkeHWi5o7RSA8PQBFTG66Qgbw=",
+    "h1:c/iKJrGk2Tc1tXJ/czqv+m9Y8qevK6hRRX/UrTOJE+w=",
+    "h1:j2p13C+/daXvHTnnvPsRg0tuY/WI4aElJxeXycfSgCQ=",
+    "h1:nn5RuBAtvYMKRhdYCcUr0yFcLinj0gwAZNFfUEWYPdY=",
+    "h1:oTIycsi0uR8YT8txfQAOdqSE44fWHdYUmp6otXv7qT0=",
+    "h1:pn0xclgq4YRf8JUmCMnTrSsAHFi/ZORix63pzl2+AM0=",
+    "h1:tadGFdx4nprR0qAscMWgEsM8vYj7HVD6sz1r8k+b0U0=",
+    "zh:22296ce07782104d7c2408f998f5bd92d5f2289303e3be1ff010ef4d4f61332a",
+    "zh:26b8af25762a460f0e41033a39f724e34d5b918f0509b725985ea85863e2ef99",
+    "zh:4d56d3e48e5f5897eb70d9ae9af88f15318c5d74d7c8f05dea6e0faf09d028c3",
+    "zh:55aedc353cb0a935fbac21bfc021c7726dd60b4b8d0f6bf6332bcbdec5c525fd",
+    "zh:66a43b0c27b7bf5ec478016c9408e29454598b23e587cde9957f8716f7800a9d",
+    "zh:6de64a5a0b81f78bda4a02c24a56a24967356e922e19a9866af37596658d1791",
+    "zh:6e68ef008d277b47bc9f0cca99d51609466853c66c7d3285b4a665f709deb356",
+    "zh:83872534561ec3c3bb1be0b9aa6a0c5a107b974aa99cad96b9c9d4e85042f8c1",
+    "zh:8e7c236211bf0bf59582815cb4244f2474482e35bd2432462e9fb405505a0e5d",
+    "zh:a1511fd933cae09b865bd6a341f4a7a3eea404944423f5b2eda14e93460c8fe8",
+    "zh:b6e33db1941468e2166a39a631224134570873dde512a7a97ca1fbcfc52ca583",
+    "zh:be96b0beba098d426f394b5031ee21bd3b48513ed45f63483888203e25a50204",
+    "zh:c6a510f121f840c2e31bcb0baa6554c03f49cc727bfbc3c6146b1c59b687909a",
+    "zh:d40feeea63d74b17db671ea0524489eec182d14769dab0f829e0964bafc4a643",
+    "zh:f7a521e7b751a2df29bbb66b786f4a4dc3e4045b36996183350abb3f836ef1fe",
   ]
 }
 
 provider "registry.opentofu.org/hashicorp/random" {
-  version = "3.9.0"
+  version     = "3.9.0"
+  constraints = "~> 3.9"
   hashes = [
     "h1:8EQU5KSxezcjo/phRSe69rDOI0lk4pSaggj7FsskYp8=",
     "h1:Lw9im2VBBJQ3RyAbHPQ0rcvcmmcZWm3x+kIOpN+Tv9s=",
