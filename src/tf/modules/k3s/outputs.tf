@@ -17,7 +17,6 @@ output "ssm_paths" {
     openbao_unseal_key             = aws_ssm_parameter.openbao_unseal_key.name
     dex_github_oauth_client_secret = aws_ssm_parameter.dex_github_oauth_client_secret.name
     dex_client_secret_parameters   = { for key, parameter in aws_ssm_parameter.dex_client_secret : key => parameter.name }
-    argo_workflows_client_secret   = aws_ssm_parameter.argo_workflows_client_secret.name
     oauth2_proxy_cookie_secret     = aws_ssm_parameter.oauth2_proxy_cookie_secret.name
   }
 }

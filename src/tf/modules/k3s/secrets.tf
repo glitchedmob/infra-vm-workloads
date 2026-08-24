@@ -32,13 +32,13 @@ resource "aws_ssm_parameter" "dex_github_oauth_client_secret" {
 }
 
 ephemeral "random_password" "dex_client" {
-  for_each = toset(["argocd", "grafana", "oauth2-proxy", "openbao"])
+  for_each = toset(["argocd", "argo-workflows", "grafana", "oauth2-proxy", "openbao"])
   length   = 40
   special  = false
 }
 
 resource "aws_ssm_parameter" "dex_client_secret" {
-  for_each = toset(["argocd", "grafana", "oauth2-proxy", "openbao"])
+  for_each = toset(["argocd", "argo-workflows", "grafana", "oauth2-proxy", "openbao"])
 
   name             = "${local.ssm_key_prefix}/dex-${each.key}-client-secret"
   type             = "SecureString"
@@ -48,18 +48,9 @@ resource "aws_ssm_parameter" "dex_client_secret" {
   lifecycle { prevent_destroy = true }
 }
 
-ephemeral "random_password" "argo_workflows_client" {
-  length  = 40
-  special = false
-}
-
-resource "aws_ssm_parameter" "argo_workflows_client_secret" {
-  name             = "${local.ssm_key_prefix}/dex-argo-workflows-client-secret"
-  type             = "SecureString"
-  value_wo         = ephemeral.random_password.argo_workflows_client.result
-  value_wo_version = 1
-
-  lifecycle { prevent_destroy = true }
+moved {
+  from = aws_ssm_parameter.argo_workflows_client_secret
+  to   = aws_ssm_parameter.dex_client_secret["argo-workflows"]
 }
 
 ephemeral "random_password" "oauth2_proxy_cookie" {
