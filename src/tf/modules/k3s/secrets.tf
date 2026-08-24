@@ -48,11 +48,6 @@ resource "aws_ssm_parameter" "dex_client_secret" {
   lifecycle { prevent_destroy = true }
 }
 
-moved {
-  from = aws_ssm_parameter.argo_workflows_client_secret
-  to   = aws_ssm_parameter.dex_client_secret["argo-workflows"]
-}
-
 ephemeral "random_password" "oauth2_proxy_cookie" {
   length  = 32
   special = false
