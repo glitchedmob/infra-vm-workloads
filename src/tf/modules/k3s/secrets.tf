@@ -31,41 +31,40 @@ resource "aws_ssm_parameter" "dex_github_oauth_client_secret" {
   value_wo_version = 1
 }
 
-ephemeral "random_password" "dex_client_argocd" {
+ephemeral "random_password" "dex_client" {
+  for_each = toset(["argocd", "grafana", "oauth2-proxy", "openbao"])
+  length   = 40
+  special  = false
+}
+
+resource "aws_ssm_parameter" "dex_client_secret" {
+  for_each = toset(["argocd", "grafana", "oauth2-proxy", "openbao"])
+
+  name             = "${local.ssm_key_prefix}/dex-${each.key}-client-secret"
+  type             = "SecureString"
+  value_wo         = ephemeral.random_password.dex_client[each.key].result
+  value_wo_version = 1
+
+  lifecycle { prevent_destroy = true }
+}
+
+ephemeral "random_password" "argo_workflows_client" {
   length  = 40
   special = false
 }
 
-ephemeral "random_password" "dex_client_grafana" {
-  length  = 40
-  special = false
-}
+resource "aws_ssm_parameter" "argo_workflows_client_secret" {
+  name             = "${local.ssm_key_prefix}/dex-argo-workflows-client-secret"
+  type             = "SecureString"
+  value_wo         = ephemeral.random_password.argo_workflows_client.result
+  value_wo_version = 1
 
-ephemeral "random_password" "dex_client_oauth2_proxy" {
-  length  = 40
-  special = false
-}
-
-ephemeral "random_password" "dex_client_openbao" {
-  length  = 40
-  special = false
+  lifecycle { prevent_destroy = true }
 }
 
 ephemeral "random_password" "oauth2_proxy_cookie" {
   length  = 32
   special = false
-}
-
-resource "aws_ssm_parameter" "dex_client_secrets" {
-  name = "${local.ssm_key_prefix}/dex-client-secrets"
-  type = "SecureString"
-  value_wo = jsonencode({
-    argocdClientSecret      = ephemeral.random_password.dex_client_argocd.result
-    grafanaClientSecret     = ephemeral.random_password.dex_client_grafana.result
-    oauth2ProxyClientSecret = ephemeral.random_password.dex_client_oauth2_proxy.result
-    openbaoClientSecret     = ephemeral.random_password.dex_client_openbao.result
-  })
-  value_wo_version = 1
 }
 
 resource "aws_ssm_parameter" "oauth2_proxy_cookie_secret" {
