@@ -16,3 +16,13 @@ output "cloudflare_tunnel_target" {
   description = "DNS target for public hostnames routed through the workload cluster tunnel"
   value       = "${cloudflare_zero_trust_tunnel_cloudflared.lz_k3s.id}.cfargotunnel.com"
 }
+
+output "lz_k3s_external_secrets_workload_role_arn" {
+  description = "IAM role ARN used by External Secrets to read LZ K3s SSM parameters."
+  value       = aws_iam_role.external_secrets.arn
+}
+
+output "lz_k3s_openbao_workload_role_arn" {
+  description = "IAM role ARN used by OpenBao bootstrap to read its SSM parameters."
+  value       = aws_iam_role.openbao.arn
+}
