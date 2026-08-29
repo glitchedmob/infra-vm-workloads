@@ -5,11 +5,18 @@ locals {
   lz_k3s_external_secrets_role = "lz-k3s-external-secrets"
   lz_k3s_openbao_role          = "lz-k3s-openbao"
 
-  lz_k3s_oidc_provider_arn     = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:oidc-provider/${local.lz_k3s_oidc_issuer}"
-  lz_k3s_workload_boundary_arn = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:policy/lz-k3s/LZK3sKubernetesWorkloadBoundary"
-  lz_k3s_ssm_parameter_arn     = "arn:aws:ssm:${var.aws_region}:${data.aws_caller_identity.current.account_id}:parameter/vm-workloads/lz/infra-vm-workloads/*"
-  external_secrets_subject     = "system:serviceaccount:external-secrets:external-secrets"
-  openbao_subject              = "system:serviceaccount:openbao:openbao"
+  lz_k3s_oidc_provider_arn           = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:oidc-provider/${local.lz_k3s_oidc_issuer}"
+  lz_k3s_workload_boundary_arn       = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:policy/lz-k3s/LZK3sKubernetesWorkloadBoundary"
+  external_secrets_ssm_parameter_arn = "arn:aws:ssm:${var.aws_region}:${data.aws_caller_identity.current.account_id}:parameter/vm-workloads/lz/infra-vm-workloads/*"
+  external_secrets_subject           = "system:serviceaccount:external-secrets:external-secrets"
+  openbao_subject                    = "system:serviceaccount:openbao:openbao"
+  openbao_ssm_parameter_arn_prefix   = "arn:aws:ssm:${var.aws_region}:${data.aws_caller_identity.current.account_id}:parameter/vm-workloads/lz/infra-vm-workloads"
+  openbao_ssm_parameter_arns = [
+    "${local.openbao_ssm_parameter_arn_prefix}/openbao-unseal-key",
+    "${local.openbao_ssm_parameter_arn_prefix}/backups/b2-account-id",
+    "${local.openbao_ssm_parameter_arn_prefix}/backups/b2-account-key",
+    "${local.openbao_ssm_parameter_arn_prefix}/backups/openbao/restic-password",
+  ]
 }
 
 resource "aws_iam_role" "external_secrets" {
@@ -58,7 +65,7 @@ resource "aws_iam_role_policy" "external_secrets" {
           "ssm:GetParameters",
           "ssm:GetParametersByPath",
         ]
-        Resource = local.lz_k3s_ssm_parameter_arn
+        Resource = local.external_secrets_ssm_parameter_arn
       },
     ]
   })
@@ -104,13 +111,9 @@ resource "aws_iam_role_policy" "openbao" {
     Version = "2012-10-17"
     Statement = [
       {
-        Effect = "Allow"
-        Action = [
-          "ssm:GetParameter",
-          "ssm:GetParameters",
-          "ssm:GetParametersByPath",
-        ]
-        Resource = local.lz_k3s_ssm_parameter_arn
+        Effect   = "Allow"
+        Action   = "ssm:GetParameter"
+        Resource = local.openbao_ssm_parameter_arns
       },
     ]
   })
