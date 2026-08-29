@@ -40,8 +40,6 @@ resource "ansible_host" "workload" {
     node_name                       = each.value.node_name
     ssm_private_key_path            = module.ssh_key.ssm_path
     ssm_git_deploy_private_key_path = module.git_deploy_key.ssm_path
-    ssm_eso_access_key_id_path      = local.ssm_eso_access_key_id_path
-    ssm_eso_secret_access_key_path  = local.ssm_eso_secret_access_key_path
     ssm_tailscale_authkey_path      = "/homelab/headscale/lz-k3s/${each.key}-auth-key"
     data_disk_interface = module.k3s_vm[each.key].data_disks[
       module.k3s_data_owner[each.key].disk.serial
