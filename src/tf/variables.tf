@@ -15,6 +15,17 @@ variable "aws_region" {
   default     = "us-east-2"
 }
 
+variable "cloudflare_account_id" {
+  description = "Cloudflare account ID that owns the workload cluster tunnel"
+  type        = string
+}
+
+variable "cloudflare_api_token" {
+  description = "Cloudflare API token with tunnel management permissions"
+  type        = string
+  sensitive   = true
+}
+
 variable "b2_application_key_id" {
   description = "Backblaze B2 application key ID for Terraform bucket management"
   type        = string

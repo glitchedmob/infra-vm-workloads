@@ -51,6 +51,8 @@ jobs:
         export TF_VAR_proxmox_api_token="${{ secrets.TF_VAR_proxmox_api_token }}"
         export TF_VAR_b2_application_key_id="${{ secrets.TF_VAR_b2_application_key_id }}"
         export TF_VAR_b2_application_key="${{ secrets.TF_VAR_b2_application_key }}"
+        export TF_VAR_cloudflare_account_id="${{ secrets.TF_VAR_cloudflare_account_id }}"
+        export TF_VAR_cloudflare_api_token="${{ secrets.TF_VAR_cloudflare_api_token }}"
       aws_role_arn: ${{ secrets.AWS_ROLE_ARN }}
 
   terraform-plan:
@@ -68,6 +70,8 @@ jobs:
         export TF_VAR_proxmox_api_token="${{ secrets.TF_VAR_proxmox_api_token }}"
         export TF_VAR_b2_application_key_id="${{ secrets.TF_VAR_b2_application_key_id }}"
         export TF_VAR_b2_application_key="${{ secrets.TF_VAR_b2_application_key }}"
+        export TF_VAR_cloudflare_account_id="${{ secrets.TF_VAR_cloudflare_account_id }}"
+        export TF_VAR_cloudflare_api_token="${{ secrets.TF_VAR_cloudflare_api_token }}"
       headscale_auth_key: ${{ secrets.HEADSCALE_AUTH_KEY }}
       aws_role_arn: ${{ secrets.AWS_ROLE_ARN }}
       output_encryption_key: ${{ secrets.OUTPUT_ENCRYPTION_KEY }}
