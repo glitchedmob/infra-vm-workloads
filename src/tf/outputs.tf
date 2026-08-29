@@ -7,5 +7,12 @@ output "git_deploy_public_key" {
 }
 
 output "ssm_paths" {
-  value = module.lz_k3s_cluster.ssm_paths
+  value = merge(module.lz_k3s_cluster.ssm_paths, {
+    cloudflare_tunnel_token = aws_ssm_parameter.cloudflare_tunnel_token.name
+  })
+}
+
+output "cloudflare_tunnel_target" {
+  description = "DNS target for public hostnames routed through the workload cluster tunnel"
+  value       = "${cloudflare_zero_trust_tunnel_cloudflared.lz_k3s.id}.cfargotunnel.com"
 }

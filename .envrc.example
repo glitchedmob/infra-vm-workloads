@@ -5,3 +5,7 @@ export TF_VAR_proxmox_endpoint="https://x86-node-01:8006/"
 export TF_VAR_proxmox_api_token="lz-gha@pve!gha=your-token-secret"
 export TF_VAR_b2_application_key_id="keyid"
 export TF_VAR_b2_application_key="key"
+
+# Cloudflare Tunnel provider auth
+export TF_VAR_cloudflare_account_id="your-cloudflare-account-id"
+export TF_VAR_cloudflare_api_token="your-cloudflare-api-token"
