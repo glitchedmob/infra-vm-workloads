@@ -1,16 +1,21 @@
+data "cloudflare_accounts" "current" {
+  max_items = 2
+}
+
 locals {
+  cloudflare_account_id               = one(data.cloudflare_accounts.current.result).id
   cloudflare_tunnel_token_ssm_path    = "/vm-workloads/lz/infra-vm-workloads/cloudflare-tunnel-token"
   cloudflare_tunnel_token_ssm_version = 1
 }
 
 resource "cloudflare_zero_trust_tunnel_cloudflared" "lz_k3s" {
-  account_id = var.cloudflare_account_id
+  account_id = local.cloudflare_account_id
   name       = "lz-infra-k8s-apps"
   config_src = "cloudflare"
 }
 
 resource "cloudflare_zero_trust_tunnel_cloudflared_config" "lz_k3s" {
-  account_id = var.cloudflare_account_id
+  account_id = local.cloudflare_account_id
   tunnel_id  = cloudflare_zero_trust_tunnel_cloudflared.lz_k3s.id
   source     = "cloudflare"
 
@@ -36,7 +41,7 @@ resource "cloudflare_zero_trust_tunnel_cloudflared_config" "lz_k3s" {
 }
 
 data "cloudflare_zero_trust_tunnel_cloudflared_token" "lz_k3s" {
-  account_id = var.cloudflare_account_id
+  account_id = local.cloudflare_account_id
   tunnel_id  = cloudflare_zero_trust_tunnel_cloudflared.lz_k3s.id
 }
 
