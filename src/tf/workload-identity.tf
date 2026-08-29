@@ -10,13 +10,7 @@ locals {
   external_secrets_ssm_parameter_arn = "arn:aws:ssm:${var.aws_region}:${data.aws_caller_identity.current.account_id}:parameter/vm-workloads/lz/infra-vm-workloads/*"
   external_secrets_subject           = "system:serviceaccount:external-secrets:external-secrets"
   openbao_subject                    = "system:serviceaccount:openbao:openbao"
-  openbao_ssm_parameter_arn_prefix   = "arn:aws:ssm:${var.aws_region}:${data.aws_caller_identity.current.account_id}:parameter/vm-workloads/lz/infra-vm-workloads"
-  openbao_ssm_parameter_arns = [
-    "${local.openbao_ssm_parameter_arn_prefix}/openbao-unseal-key",
-    "${local.openbao_ssm_parameter_arn_prefix}/backups/b2-account-id",
-    "${local.openbao_ssm_parameter_arn_prefix}/backups/b2-account-key",
-    "${local.openbao_ssm_parameter_arn_prefix}/backups/openbao/restic-password",
-  ]
+  openbao_ssm_parameter_arn          = "arn:aws:ssm:${var.aws_region}:${data.aws_caller_identity.current.account_id}:parameter/vm-workloads/lz/infra-vm-workloads/openbao-unseal-key"
 }
 
 resource "aws_iam_role" "external_secrets" {
@@ -113,7 +107,7 @@ resource "aws_iam_role_policy" "openbao" {
       {
         Effect   = "Allow"
         Action   = "ssm:GetParameter"
-        Resource = local.openbao_ssm_parameter_arns
+        Resource = local.openbao_ssm_parameter_arn
       },
     ]
   })
