@@ -2,6 +2,13 @@
 k3s_version: v1.36.3+k3s1
 cluster_cidr: 10.54.0.0/16
 service_cidr: 10.55.0.0/16
+server_config_yaml: |
+  kube-apiserver-arg:
+    - service-account-issuer=https://kubernetes.default.svc.cluster.local
+    - service-account-issuer=https://k8s-oidc-lz.levizitting.com
+    - service-account-jwks-uri=https://k8s-oidc-lz.levizitting.com/openid/v1/jwks
+  node-label:
+    - "cpu-microarchitecture={{ k3s_cpu_microarchitecture }}"
 tailscale_login_server: "https://headscale.levizitting.com"
 tailscale_local_subnets:
   - 10.20.0.0/16
