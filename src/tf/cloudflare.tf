@@ -30,6 +30,7 @@ resource "cloudflare_zero_trust_tunnel_cloudflared_config" "lz_k3s" {
         hostname = "*.levizitting.com"
         service  = "https://traefik.kube-system.svc.cluster.local:443"
         origin_request = {
+          http2_origin      = true
           match_sn_ito_host = true
         }
       },
