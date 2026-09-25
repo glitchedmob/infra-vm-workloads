@@ -24,14 +24,15 @@ resource "cloudflare_zero_trust_tunnel_cloudflared_config" "lz_k3s" {
       {
         hostname = "*.levizitting.com"
         path     = "^/\\.well-known/acme-challenge/.*"
-        service  = "http://traefik.kube-system.svc.cluster.local:80"
+        service  = "http://127.0.0.1:8000"
       },
       {
         hostname = "*.levizitting.com"
-        service  = "https://traefik.kube-system.svc.cluster.local:443"
+        service  = "https://127.0.0.1:8443"
         origin_request = {
-          http2_origin      = true
-          match_sn_ito_host = true
+          http2_origin       = true
+          origin_server_name = "traefik.levizitting.com"
+          ca_pool            = "/etc/cloudflared/origin-ca/ca.crt"
         }
       },
       {
