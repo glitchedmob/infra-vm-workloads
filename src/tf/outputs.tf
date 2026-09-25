@@ -8,7 +8,8 @@ output "git_deploy_public_key" {
 
 output "ssm_paths" {
   value = merge(module.lz_k3s_cluster.ssm_paths, {
-    cloudflare_tunnel_token = aws_ssm_parameter.cloudflare_tunnel_token.name
+    cloudflare_tunnel_token      = aws_ssm_parameter.cloudflare_tunnel_token.name
+    crowdsec_traefik_bouncer_key = aws_ssm_parameter.crowdsec_traefik_bouncer_key.name
   })
 }
 
