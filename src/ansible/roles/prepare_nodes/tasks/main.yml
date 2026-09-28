@@ -14,6 +14,12 @@
     state: present
     update_cache: true
 
+- name: Keep TUN available for Kubernetes Tailscale sidecars
+  community.general.modprobe:
+    name: tun
+    state: present
+    persistent: present
+
 - name: Start and enable iscsid service
   ansible.builtin.systemd:
     name: iscsid
