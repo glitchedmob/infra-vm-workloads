@@ -61,6 +61,17 @@ resource "aws_iam_role_policy" "external_secrets" {
         ]
         Resource = local.external_secrets_ssm_parameter_arn
       },
+      {
+        Effect = "Allow"
+        Action = [
+          "ssm:GetParameter",
+          "ssm:GetParameters",
+        ]
+        Resource = [
+          "arn:aws:ssm:${var.aws_region}:${data.aws_caller_identity.current.account_id}:parameter/homelab/headscale/pods/lz/dns-gateway-auth-key",
+          "arn:aws:ssm:${var.aws_region}:${data.aws_caller_identity.current.account_id}:parameter/homelab/headscale/pods/lz/ingress-gateway-auth-key",
+        ]
+      },
     ]
   })
 }
