@@ -27,17 +27,8 @@ resource "cloudflare_zero_trust_tunnel_cloudflared_config" "lz_k3s" {
         service  = "http://127.0.0.1:8000"
       },
       {
-        hostname = "visitor-ip-probe-cf.levizitting.com"
-        service  = "https://127.0.0.1:9443"
-        origin_request = {
-          http2_origin       = true
-          origin_server_name = "traefik.levizitting.com"
-          ca_pool            = "/etc/cloudflared/origin-ca/ca.crt"
-        }
-      },
-      {
         hostname = "*.levizitting.com"
-        service  = "https://127.0.0.1:8443"
+        service  = "https://127.0.0.1:9443"
         origin_request = {
           http2_origin       = true
           origin_server_name = "traefik.levizitting.com"
