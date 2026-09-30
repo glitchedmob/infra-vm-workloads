@@ -6,8 +6,6 @@ collections:
     version: 11.4.0
   - name: ansible.posix
     version: 2.2.1
-  - name: artis3n.tailscale
-    version: 1.2.1
   - name: community.general
     version: 13.1.0
   - name: https://github.com/k3s-io/k3s-ansible.git

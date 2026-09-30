@@ -12,8 +12,6 @@
       tags: prepare_nodes
     - role: prepare_storage
       tags: prepare_storage
-    - role: tailscale
-      tags: tailscale
     - role: k3s.orchestration.prereq
       tags: k3s_prereq
 
