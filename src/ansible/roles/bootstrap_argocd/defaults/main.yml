@@ -52,7 +52,7 @@ bootstrap_argocd_dependent_operator_workloads:
     selector: app.kubernetes.io/instance=trust-manager
   - namespace: observability
     selector: app.kubernetes.io/instance=otel-operator
-bootstrap_argocd_configuration_resources:
+bootstrap_argocd_foundation_resources:
   - resource: clusterissuer/letsencrypt-prod
     condition: Ready
   - resource: clusterissuer/levizitting-ca
@@ -60,7 +60,71 @@ bootstrap_argocd_configuration_resources:
   - resource: certificate/levizitting-root-ca
     namespace: cert-manager
     condition: Ready
-  - resource: clustersecretstore/aws-ssm
-    condition: Ready
   - resource: bundle/levizitting-ca-bundle
     condition: Synced
+
+# These are missing-only seeds, not a rotation or drift-repair policy.
+bootstrap_argocd_ingress_seeds:
+  - namespace: kube-system
+    name: cloudflared-token
+    parameters:
+      token: /vm-workloads/lz/infra-vm-workloads/cloudflare-tunnel-token
+  - namespace: kube-system
+    name: traefik-tailnet-auth
+    parameters:
+      authkey: /homelab/headscale/pods/lz/ingress-gateway-auth-key
+  - namespace: kube-system
+    name: crowdsec-bouncer-key
+    parameters:
+      BOUNCER_KEY_traefik: /vm-workloads/lz/infra-vm-workloads/crowdsec-traefik-bouncer-key
+  - namespace: kube-system
+    name: dns-gateway-auth-key
+    parameters:
+      authkey: /homelab/headscale/pods/lz/dns-gateway-auth-key
+bootstrap_argocd_aws_resources:
+  - resource: clustersecretstore/argo-workflows-k8s
+    condition: Ready
+  - resource: clustersecretstore/argocd-k8s
+    condition: Ready
+  - resource: clustersecretstore/aws-ssm
+    condition: Ready
+  - resource: clustersecretstore/dex-k8s
+    condition: Ready
+  - resource: clustersecretstore/grafana-k8s
+    condition: Ready
+  - resource: clustersecretstore/oauth2-proxy-k8s
+    condition: Ready
+  - resource: externalsecret/argo-workflows-secrets
+    namespace: external-secrets
+    condition: Ready
+  - resource: externalsecret/argocd-secrets
+    namespace: external-secrets
+    condition: Ready
+  - resource: externalsecret/dex-secrets
+    namespace: external-secrets
+    condition: Ready
+  - resource: externalsecret/grafana-secrets
+    namespace: external-secrets
+    condition: Ready
+  - resource: externalsecret/oauth2-proxy-secrets
+    namespace: external-secrets
+    condition: Ready
+  - resource: externalsecret/ssm-cache
+    namespace: external-secrets
+    condition: Ready
+  - resource: externalsecret/cloudflared-token
+    namespace: kube-system
+    condition: Ready
+  - resource: externalsecret/crowdsec-bouncer-key
+    namespace: kube-system
+    condition: Ready
+  - resource: externalsecret/dns-gateway-auth-key
+    namespace: kube-system
+    condition: Ready
+  - resource: externalsecret/traefik-tailnet-auth
+    namespace: kube-system
+    condition: Ready
+  - resource: secretstore/cache-k8s
+    namespace: external-secrets
+    condition: Ready
+bootstrap_argocd_issuer_operation_annotation: infra.levizitting.com/issuer-operation-gate
