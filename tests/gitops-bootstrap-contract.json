@@ -1,0 +1,42 @@
+{
+  "health": {
+    "resource.customizations.health.argoproj.io_Application": "044a3c17a89cd7140a9fe6be9d7fd4231857d59f9a1646a1c2fe91e81c16ba0d",
+    "resource.customizations.health.external-secrets.io_ExternalSecret": "ac47d5af2bb486a8b2faf3c4af5f8b9952e47d1520bbcde578128d3d88426d41",
+    "resource.customizations.health.external-secrets.io_SecretStore": "ac47d5af2bb486a8b2faf3c4af5f8b9952e47d1520bbcde578128d3d88426d41",
+    "resource.customizations.health.external-secrets.io_ClusterSecretStore": "ac47d5af2bb486a8b2faf3c4af5f8b9952e47d1520bbcde578128d3d88426d41"
+  },
+  "admission": "efc4af42506501fadb1959a381036f448eb11e5b6edf6df308131dec3499c850",
+  "seeds": {
+    "kube-system/cloudflared-token": {
+      "token": "/vm-workloads/lz/infra-vm-workloads/cloudflare-tunnel-token"
+    },
+    "kube-system/crowdsec-bouncer-key": {
+      "BOUNCER_KEY_traefik": "/vm-workloads/lz/infra-vm-workloads/crowdsec-traefik-bouncer-key"
+    },
+    "kube-system/dns-gateway-auth-key": {
+      "authkey": "/homelab/headscale/pods/lz/dns-gateway-auth-key"
+    },
+    "kube-system/traefik-tailnet-auth": {
+      "authkey": "/homelab/headscale/pods/lz/ingress-gateway-auth-key"
+    }
+  },
+  "eso": [
+    "clustersecretstore/argo-workflows-k8s/",
+    "clustersecretstore/argocd-k8s/",
+    "clustersecretstore/aws-ssm/",
+    "clustersecretstore/dex-k8s/",
+    "clustersecretstore/grafana-k8s/",
+    "clustersecretstore/oauth2-proxy-k8s/",
+    "externalsecret/argo-workflows-secrets/external-secrets",
+    "externalsecret/argocd-secrets/external-secrets",
+    "externalsecret/dex-secrets/external-secrets",
+    "externalsecret/grafana-secrets/external-secrets",
+    "externalsecret/oauth2-proxy-secrets/external-secrets",
+    "externalsecret/ssm-cache/external-secrets",
+    "externalsecret/cloudflared-token/kube-system",
+    "externalsecret/crowdsec-bouncer-key/kube-system",
+    "externalsecret/dns-gateway-auth-key/kube-system",
+    "externalsecret/traefik-tailnet-auth/kube-system",
+    "secretstore/cache-k8s/external-secrets"
+  ]
+}
