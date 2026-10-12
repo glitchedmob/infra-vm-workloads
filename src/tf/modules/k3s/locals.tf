@@ -25,7 +25,7 @@ locals {
       cpu_type     = "x86-64-v3"
     }
     lz-k3s-03 = {
-      node_name    = "x86-node-01"
+      node_name    = "x86-node-03"
       ipv4_address = "10.20.0.12"
       role         = "server"
       memory_mb    = 30 * 1024
