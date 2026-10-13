@@ -8,8 +8,8 @@
   "admission": "efc4af42506501fadb1959a381036f448eb11e5b6edf6df308131dec3499c850",
   "seeds": {
     "kube-system/bootstrap-aws-credentials": {
-      "access-key-id": "/vm-workloads/lz/infra-vm-workloads/bootstrap-aws/access-key-id",
-      "secret-access-key": "/vm-workloads/lz/infra-vm-workloads/bootstrap-aws/secret-access-key"
+      "access-key-id": "/vm-workloads/lz/infra-vm-workloads/bootstrap-aws/credentials",
+      "secret-access-key": "/vm-workloads/lz/infra-vm-workloads/bootstrap-aws/credentials"
     }
   },
   "ingress_eso": [
