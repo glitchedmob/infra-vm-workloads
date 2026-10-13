@@ -7,19 +7,16 @@
   },
   "admission": "efc4af42506501fadb1959a381036f448eb11e5b6edf6df308131dec3499c850",
   "seeds": {
-    "kube-system/cloudflared-token": {
-      "token": "/vm-workloads/lz/infra-vm-workloads/cloudflare-tunnel-token"
-    },
-    "kube-system/crowdsec-bouncer-key": {
-      "BOUNCER_KEY_traefik": "/vm-workloads/lz/infra-vm-workloads/crowdsec-traefik-bouncer-key"
-    },
-    "kube-system/dns-gateway-auth-key": {
-      "authkey": "/homelab/headscale/pods/lz/dns-gateway-auth-key"
-    },
-    "kube-system/traefik-tailnet-auth": {
-      "authkey": "/homelab/headscale/pods/lz/ingress-gateway-auth-key"
+    "kube-system/bootstrap-aws-credentials": {
+      "access-key-id": "/vm-workloads/lz/infra-vm-workloads/bootstrap-aws/access-key-id",
+      "secret-access-key": "/vm-workloads/lz/infra-vm-workloads/bootstrap-aws/secret-access-key"
     }
   },
+  "ingress_eso": [
+    "secretstore/bootstrap-aws-ssm/kube-system",
+    "externalsecret/cloudflared-token/kube-system",
+    "externalsecret/crowdsec-bouncer-key/kube-system"
+  ],
   "eso": [
     "clustersecretstore/argo-workflows-k8s/",
     "clustersecretstore/argocd-k8s/",
@@ -33,10 +30,32 @@
     "externalsecret/grafana-secrets/external-secrets",
     "externalsecret/oauth2-proxy-secrets/external-secrets",
     "externalsecret/ssm-cache/external-secrets",
-    "externalsecret/cloudflared-token/kube-system",
-    "externalsecret/crowdsec-bouncer-key/kube-system",
     "externalsecret/dns-gateway-auth-key/kube-system",
     "externalsecret/traefik-tailnet-auth/kube-system",
     "secretstore/cache-k8s/external-secrets"
-  ]
+  ],
+  "static_store": {
+    "namespace": "kube-system",
+    "name": "bootstrap-aws-ssm",
+    "service": "ParameterStore",
+    "region": "us-east-2",
+    "auth": {
+      "secretRef": {
+        "accessKeyIDSecretRef": {
+          "name": "bootstrap-aws-credentials",
+          "key": "access-key-id"
+        },
+        "secretAccessKeySecretRef": {
+          "name": "bootstrap-aws-credentials",
+          "key": "secret-access-key"
+        }
+      }
+    }
+  },
+  "application_waves": {
+    "bootstrap-ingress-config": -4,
+    "bootstrap-config": -3,
+    "k8s-oidc": -2,
+    "bootstrap-aws-config": -1
+  }
 }

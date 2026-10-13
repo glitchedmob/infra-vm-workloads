@@ -63,24 +63,23 @@ bootstrap_argocd_foundation_resources:
   - resource: bundle/levizitting-ca-bundle
     condition: Synced
 
-# These are missing-only seeds, not a rotation or drift-repair policy.
-bootstrap_argocd_ingress_seeds:
+# Create-only credentials for the namespace-local static ingress SecretStore.
+bootstrap_argocd_aws_credential_seeds:
   - namespace: kube-system
-    name: cloudflared-token
+    name: bootstrap-aws-credentials
     parameters:
-      token: /vm-workloads/lz/infra-vm-workloads/cloudflare-tunnel-token
-  - namespace: kube-system
-    name: traefik-tailnet-auth
-    parameters:
-      authkey: /homelab/headscale/pods/lz/ingress-gateway-auth-key
-  - namespace: kube-system
-    name: crowdsec-bouncer-key
-    parameters:
-      BOUNCER_KEY_traefik: /vm-workloads/lz/infra-vm-workloads/crowdsec-traefik-bouncer-key
-  - namespace: kube-system
-    name: dns-gateway-auth-key
-    parameters:
-      authkey: /homelab/headscale/pods/lz/dns-gateway-auth-key
+      access-key-id: /vm-workloads/lz/infra-vm-workloads/bootstrap-aws/access-key-id
+      secret-access-key: /vm-workloads/lz/infra-vm-workloads/bootstrap-aws/secret-access-key
+bootstrap_argocd_ingress_resources:
+  - resource: secretstore/bootstrap-aws-ssm
+    namespace: kube-system
+    condition: Ready
+  - resource: externalsecret/cloudflared-token
+    namespace: kube-system
+    condition: Ready
+  - resource: externalsecret/crowdsec-bouncer-key
+    namespace: kube-system
+    condition: Ready
 bootstrap_argocd_aws_resources:
   - resource: clustersecretstore/argo-workflows-k8s
     condition: Ready
@@ -111,12 +110,6 @@ bootstrap_argocd_aws_resources:
     condition: Ready
   - resource: externalsecret/ssm-cache
     namespace: external-secrets
-    condition: Ready
-  - resource: externalsecret/cloudflared-token
-    namespace: kube-system
-    condition: Ready
-  - resource: externalsecret/crowdsec-bouncer-key
-    namespace: kube-system
     condition: Ready
   - resource: externalsecret/dns-gateway-auth-key
     namespace: kube-system
