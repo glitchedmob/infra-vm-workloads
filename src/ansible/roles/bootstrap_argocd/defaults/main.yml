@@ -63,7 +63,7 @@ bootstrap_argocd_foundation_resources:
   - resource: bundle/levizitting-ca-bundle
     condition: Synced
 
-# Create-only credentials for the namespace-local static ingress SecretStore.
+# Reconciled credentials for the namespace-local static ingress SecretStore.
 bootstrap_argocd_aws_credential_seeds:
   - namespace: kube-system
     name: bootstrap-aws-credentials

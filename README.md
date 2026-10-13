@@ -1,7 +1,5 @@
 # infra-vm-workloads
 
-See [the bootstrap role guide](src/ansible/roles/bootstrap_argocd/README.md) for create-only static AWS bootstrap credentials, staged ingress readiness and GitOps migration recovery.
-
 Provisions LZ workload VMs on Proxmox and bootstraps the k3s cluster and Argo CD baseline used to deploy Kubernetes manifests.
 
 ## Scope
@@ -10,7 +8,7 @@ Provisions LZ workload VMs on Proxmox and bootstraps the k3s cluster and Argo CD
 
 ## Structure
 - `src/tf/`: Provisions Proxmox VMs and emits Terraform-backed Ansible inventory data.
-- `src/ansible/`: Rebuilds the cluster (`cluster-bootstrap.yml`), supports rerunning Argo CD bootstrap (`argocd-bootstrap.yml`) and seeds static AWS credentials without platform waits (`bootstrap-aws-credentials.yml`).
+- `src/ansible/`: Rebuilds the cluster (`cluster-bootstrap.yml`) and supports rerunning Argo CD bootstrap (`argocd-bootstrap.yml`).
 - `.github/workflows/`: Terraform plan/apply and Ansible lint/manual execution workflows.
 
 ## Run
@@ -26,8 +24,7 @@ make ansible PLAYBOOK=argocd-bootstrap.yml
 
 ## Operational order
 - Apply Terraform first to create VMs and write required SSM parameter paths.
-- Before Kubernetes transfer on an existing cluster, run `make ansible PLAYBOOK=bootstrap-aws-credentials.yml`. The seed-only playbook does not reconcile Argo, platform or admission, and does not wait for legacy readiness. Manual workflow runs require main and `initialize-terraform=true`.
-- Run `cluster-bootstrap.yml` for a complete rebuild. Run `argocd-bootstrap.yml` to reconcile only the Argo CD bootstrap resources. Cold bootstrap requires the populated TRANSFER graph or its cleanup successor on Kubernetes main; prepare is migration-only and has empty configuration children.
+- Run `cluster-bootstrap.yml` for a complete rebuild. Run `argocd-bootstrap.yml` to reconcile only the Argo CD bootstrap resources.
 - Add `git_deploy_public_key` output as a read-only deploy key in [`glitchedmob/infra-k8s-apps`](https://github.com/glitchedmob/infra-k8s-apps).
 - Argo CD and Grafana authenticate through Dex; only the Dex GitHub OAuth App secret needs manual population in SSM.
 
