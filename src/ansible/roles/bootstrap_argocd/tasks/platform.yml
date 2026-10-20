@@ -5,42 +5,23 @@
     bootstrap_argocd_manifest_name: platform root
     bootstrap_argocd_manifest: "{{ lookup('file', role_path ~ '/files/argocd-platform-root.yaml') }}"
 
-# Argo's child health gates enforce ingress, issuer and AWS configuration ordering.
-- name: Wait for Argo CD to reconcile the platform
+- name: Wait for foundational platform configuration
   ansible.builtin.command:
-    argv: [kubectl, get, application, platform, --namespace=argocd, -o, json]
+    argv: >-
+      {{
+        ['kubectl', 'wait', item.resource, '--for=condition=' ~ item.condition,
+         '--timeout=' ~ bootstrap_argocd_poll_timeout]
+        + ((item.namespace is defined) | ternary(['--namespace=' ~ (item.namespace | default(''))], []))
+      }}
   environment:
     KUBECONFIG: /etc/rancher/k3s/k3s.yaml
-  register: _bootstrap_argocd_platform_read
+  register: _bootstrap_argocd_configuration_ready
   changed_when: false
   failed_when: false
   retries: "{{ bootstrap_argocd_health_retries }}"
   delay: "{{ bootstrap_argocd_health_delay }}"
-  vars:
-    _bootstrap_argocd_platform: "{{ _bootstrap_argocd_platform_read.stdout | default('{}', true) | from_json }}"
-  until:
-    - _bootstrap_argocd_platform_read.rc == 0
-    - _bootstrap_argocd_platform.get('operation') is none
-    - _bootstrap_argocd_platform.get('status', {}).get('sync', {}).get('status', '') == 'Synced'
-    - _bootstrap_argocd_platform.get('status', {}).get('health', {}).get('status', '') == 'Healthy'
-    - _bootstrap_argocd_platform.get('status', {}).get('operationState', {}).get('phase', '') == 'Succeeded'
-  run_once: true
-
-# Argo has no built-in health assessment for trust-manager Bundles.
-- name: Wait for the cluster CA bundle
-  ansible.builtin.command:
-    argv:
-      - kubectl
-      - wait
-      - bundle/levizitting-ca-bundle
-      - --for=condition=Synced
-      - "--timeout={{ bootstrap_argocd_poll_timeout }}"
-  environment:
-    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
-  register: _bootstrap_argocd_bundle_ready
-  changed_when: false
-  failed_when: false
-  retries: "{{ bootstrap_argocd_health_retries }}"
-  delay: "{{ bootstrap_argocd_health_delay }}"
-  until: _bootstrap_argocd_bundle_ready.rc == 0
+  until: _bootstrap_argocd_configuration_ready.rc == 0
+  loop: "{{ bootstrap_argocd_configuration_resources }}"
+  loop_control:
+    label: "{{ item.resource }}"
   run_once: true

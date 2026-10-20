@@ -52,4 +52,17 @@ bootstrap_argocd_dependent_operator_workloads:
     selector: app.kubernetes.io/instance=trust-manager
   - namespace: observability
     selector: app.kubernetes.io/instance=otel-operator
+bootstrap_argocd_configuration_resources:
+  - resource: clusterissuer/letsencrypt-prod
+    condition: Ready
+  - resource: clusterissuer/levizitting-ca
+    condition: Ready
+  - resource: certificate/levizitting-root-ca
+    namespace: cert-manager
+    condition: Ready
+  - resource: clustersecretstore/aws-ssm
+    condition: Ready
+  - resource: bundle/levizitting-ca-bundle
+    condition: Synced
+
 bootstrap_argocd_aws_credentials_parameter: /vm-workloads/lz/infra-vm-workloads/bootstrap-aws/credentials
