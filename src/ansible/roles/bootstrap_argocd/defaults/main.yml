@@ -64,3 +64,5 @@ bootstrap_argocd_configuration_resources:
     condition: Ready
   - resource: bundle/levizitting-ca-bundle
     condition: Synced
+
+bootstrap_argocd_aws_credentials_parameter: /vm-workloads/lz/infra-vm-workloads/bootstrap-aws/credentials
